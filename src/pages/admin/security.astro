@@ -55,6 +55,11 @@ import Layout from '../../layouts/Layout.astro';
 <script>
   import { supabase } from '../../lib/supabase';
 
+  async function hashPassword(str: string) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
+  }
+
   const checkAuth = () => {
     if (sessionStorage.getItem('admin_access') !== 'true') {
       window.location.href = '/admin';
@@ -71,28 +76,37 @@ import Layout from '../../layouts/Layout.astro';
     const usernameInput = document.getElementById('new-username') as HTMLInputElement;
     const passwordInput = document.getElementById('new-password') as HTMLInputElement;
 
-    // Load current
+    // Load current username ONLY — never pre-fill passwords for security
     async function loadCurrent() {
-        const { data } = await supabase.from('admin_access').select('username, password').eq('id', 1).single();
+        const { data } = await supabase.from('admin_access').select('username').eq('id', 1).single();
         if (data) {
             usernameInput.value = data.username;
-            passwordInput.value = data.password;
         }
     }
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!passwordInput.value || passwordInput.value.length < 6) {
+        if (msg) {
+          msg.innerText = 'La contraseña debe tener al menos 6 caracteres.';
+          msg.className = 'text-xs font-bold text-center text-amber-500';
+        }
+        return;
+      }
       saveBtn.disabled = true;
       if (msg) {
           msg.innerText = 'Guardando...';
           msg.className = 'text-xs font-bold text-center text-[#567C8D]';
       }
 
+      const hashedPassword = await hashPassword(passwordInput.value);
+
+      // updated_at is handled by Supabase trigger or omitted if column doesn't exist
       const { error } = await supabase
         .from('admin_access')
         .update({
           username: usernameInput.value,
-          password: passwordInput.value,
+          password: hashedPassword,
           updated_at: new Date().toISOString()
         })
         .eq('id', 1);
@@ -100,6 +114,7 @@ import Layout from '../../layouts/Layout.astro';
       saveBtn.disabled = false;
 
       if (!error) {
+        passwordInput.value = ''; // Clear password field after save
         if (msg) {
             msg.innerText = '¡Credenciales actualizadas correctamente!';
             msg.className = 'text-xs font-bold text-center text-emerald-500';

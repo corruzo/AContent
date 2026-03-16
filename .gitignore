@@ -39,3 +39,6 @@ src/assets/portfolio/
 src/assets/about/
 src/assets/services/
 src/assets/images/
+
+# Scripts sensibles
+SUPABASE_SETUP.sql

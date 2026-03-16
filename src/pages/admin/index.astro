@@ -48,6 +48,11 @@ import Layout from '../../layouts/Layout.astro';
 <script>
   import { supabase } from '../../lib/supabase';
 
+  async function hashPassword(str: string) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
+  }
+
   const form = document.getElementById('login-form');
   const errorMsg = document.getElementById('error-msg');
   
@@ -58,6 +63,8 @@ import Layout from '../../layouts/Layout.astro';
     
     if (errorMsg) errorMsg.innerText = 'Validando...';
 
+    const hashedPassword = await hashPassword(passInput);
+
     const { data, error } = await supabase
       .from('admin_access')
       .select('username, password')
@@ -65,7 +72,7 @@ import Layout from '../../layouts/Layout.astro';
       .single();
 
     if (!error && data) {
-      if (userInput === data.username && passInput === data.password) {
+      if (userInput === data.username && hashedPassword === data.password) {
         sessionStorage.setItem('admin_access', 'true');
         window.location.href = '/admin/dashboard';
       } else {

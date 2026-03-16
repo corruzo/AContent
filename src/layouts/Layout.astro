@@ -169,6 +169,12 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
               sessionStorage.setItem('_sid', sessionId);
             }
+
+            // Evitar conteo duplicado por recarga o navegación interna
+            const trackKey = '_tracked_' + window.location.pathname;
+            if (sessionStorage.getItem(trackKey)) return;
+            sessionStorage.setItem(trackKey, 'true');
+
             await fetch(`${supabaseUrl}/rest/v1/analytics`, {
               method: 'POST',
               headers: {

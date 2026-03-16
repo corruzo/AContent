@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Buzón de Ideas - Anais Content">
+<Layout title="Buzón de Leads - Anais Content">
   <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
     <div class="max-w-5xl mx-auto">
       <div class="flex justify-between items-center mb-8">
@@ -16,11 +16,24 @@ import Layout from '../../layouts/Layout.astro';
         </div>
       </div>
 
-      <div class="bg-white p-12 rounded-[48px] shadow-2xl">
-        <h1 class="font-display text-4xl font-bold text-[#1C2B3A] mb-12">Buzón de Leads</h1>
+      <div class="bg-white p-8 md:p-12 rounded-[48px] shadow-2xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
+          <div>
+            <h1 class="font-display text-4xl font-bold text-[#1C2B3A]">Buzón de Leads</h1>
+            <p id="unread-badge" class="text-[10px] font-black uppercase tracking-widest text-[#567C8D] mt-1 hidden"></p>
+          </div>
+          <button id="mark-all-read" class="hidden bg-[#F5EFEB] text-[#1C2B3A] px-6 py-3 rounded-xl font-bold text-[9px] uppercase tracking-widest hover:bg-[#1C2B3A] hover:text-white transition-all">
+            Marcar todos como leídos
+          </button>
+        </div>
         
-        <div id="messages-container" class="space-y-6 opacity-0 transition-opacity duration-1000">
-           <!-- Messages injected here -->
+        <div id="messages-container" class="space-y-5 opacity-0 transition-opacity duration-1000">
+        </div>
+
+        <div id="pagination" class="mt-10 flex justify-center gap-4 hidden">
+          <button id="prev-page" class="px-6 py-3 bg-[#F5EFEB] text-[#1C2B3A] rounded-xl font-bold text-[9px] uppercase tracking-widest hover:bg-[#1C2B3A] hover:text-white transition-all disabled:opacity-30">Anterior</button>
+          <span id="page-indicator" class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#567C8D]"></span>
+          <button id="next-page" class="px-6 py-3 bg-[#F5EFEB] text-[#1C2B3A] rounded-xl font-bold text-[9px] uppercase tracking-widest hover:bg-[#1C2B3A] hover:text-white transition-all disabled:opacity-30">Siguiente</button>
         </div>
       </div>
     </div>
@@ -39,46 +52,106 @@ import Layout from '../../layouts/Layout.astro';
   };
 
   if (checkAuth()) {
-    async function loadMessages() {
+    const PAGE_SIZE = 20;
+    let currentPage = 0;
+
+    async function loadMessages(page = 0) {
       const container = document.getElementById('messages-container');
       const spinner = document.getElementById('loading-spinner');
+      const unreadBadge = document.getElementById('unread-badge');
+      const markAllBtn = document.getElementById('mark-all-read');
+      const pagination = document.getElementById('pagination');
+      const pageIndicator = document.getElementById('page-indicator');
       if (!container) return;
 
-      const { data: messages, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const [
+        { data: messages, error, count },
+        { count: unreadCount }
+      ] = await Promise.all([
+        supabase.from('messages').select('*', { count: 'exact' }).order('created_at', { ascending: false }).range(from, to),
+        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('read', false)
+      ]);
+
+      const totalCount = count || 0;
+
+      // Unread badge
+      if (unreadCount && unreadCount > 0) {
+        unreadBadge?.classList.remove('hidden');
+        if (unreadBadge) unreadBadge.textContent = `${unreadCount} mensaje${unreadCount > 1 ? 's' : ''} sin leer`;
+        markAllBtn?.classList.remove('hidden');
+      } else {
+        unreadBadge?.classList.add('hidden');
+        markAllBtn?.classList.add('hidden');
+      }
 
       if (error || !messages || messages.length === 0) {
         container.innerHTML = '<p class="text-center py-20 text-[#567C8D] font-bold uppercase tracking-widest text-xs">No hay mensajes aún.</p>';
       } else {
         container.innerHTML = messages.map(msg => `
-          <div class="bg-[#F5EFEB]/50 p-8 rounded-3xl border border-[#C8D9E6]/20 group hover:bg-white hover:shadow-xl transition-all relative">
-            <button class="delete-msg-btn absolute top-6 right-6 p-2 text-red-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" data-id="${msg.id}" title="Eliminar mensaje">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <div class="flex justify-between items-start mb-6 pr-10">
-              <div>
-                <h3 class="font-bold text-lg text-[#1C2B3A]">${msg.name}</h3>
-                <p class="text-xs text-[#567C8D] font-medium">${msg.email}</p>
+          <div class="relative p-7 rounded-3xl border-2 transition-all group ${msg.read ? 'bg-white border-[#F5EFEB]' : 'bg-[#F5EFEB] border-[#567C8D]/20'}">
+            <div class="flex justify-between items-start mb-4 pr-20">
+              <div class="flex items-center gap-3">
+                ${!msg.read ? '<div class="w-2.5 h-2.5 rounded-full bg-[#567C8D] shrink-0 animate-pulse mt-1"></div>' : '<div class="w-2.5 h-2.5 rounded-full bg-transparent border border-[#C8D9E6] shrink-0 mt-1"></div>'}
+                <div>
+                  <h3 class="font-bold text-base text-[#1C2B3A]">${msg.name || 'Sin nombre'}</h3>
+                  <a href="mailto:${msg.email}" class="text-xs text-[#567C8D] font-medium hover:underline">${msg.email || ''}</a>
+                </div>
               </div>
-              <span class="text-[9px] font-black text-[#567C8D]/40 uppercase tracking-widest">
+              <span class="text-[9px] font-black text-[#567C8D]/40 uppercase tracking-widest shrink-0">
                 ${new Date(msg.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
               </span>
             </div>
-            <p class="text-sm text-[#2F4156] leading-relaxed italic">"${msg.message}"</p>
+            <p class="text-sm text-[#2F4156] leading-relaxed italic pl-6">"${msg.message}"</p>
+            
+            <div class="absolute top-5 right-5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="toggle-read-btn p-2.5 rounded-xl ${msg.read ? 'bg-[#567C8D]/10 text-[#567C8D]' : 'bg-emerald-50 text-emerald-500'} hover:scale-110 transition-all" 
+                data-id="${msg.id}" data-read="${msg.read}" title="${msg.read ? 'Marcar sin leer' : 'Marcar como leído'}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${msg.read ? 'M3 19v-8.93a2 2 0 01.89-1.664L12 3l8.11 5.406A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0L9.75 14.5' : 'M5 13l4 4L19 7'}"/>
+                </svg>
+              </button>
+              <button class="delete-msg-btn p-2.5 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:scale-110 transition-all" data-id="${msg.id}" title="Eliminar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
           </div>
         `).join('');
 
-        // Attach delete events
+        // Pagination
+        const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+        if (totalPages > 1) {
+          pagination?.classList.remove('hidden');
+          if (pageIndicator) pageIndicator.textContent = `Página ${page + 1} de ${totalPages}`;
+          const prevBtn = document.getElementById('prev-page') as HTMLButtonElement;
+          const nextBtn = document.getElementById('next-page') as HTMLButtonElement;
+          if (prevBtn) prevBtn.disabled = page === 0;
+          if (nextBtn) nextBtn.disabled = page >= totalPages - 1;
+        } else {
+          pagination?.classList.add('hidden');
+        }
+
+        // Toggle read
+        document.querySelectorAll('.toggle-read-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = (btn as HTMLButtonElement).dataset.id;
+            const isRead = (btn as HTMLButtonElement).dataset.read === 'true';
+            await supabase.from('messages').update({ read: !isRead }).eq('id', id);
+            loadMessages(currentPage);
+          });
+        });
+
+        // Delete
         document.querySelectorAll('.delete-msg-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('¿Eliminar este mensaje?')) return;
-                const id = (btn as HTMLButtonElement).dataset.id;
-                const { error } = await supabase.from('messages').delete().eq('id', id);
-                if (!error) loadMessages();
-                else alert("Error al eliminar: " + error.message);
-            });
+          btn.addEventListener('click', async () => {
+            if (!confirm('¿Eliminar este mensaje permanentemente?')) return;
+            const id = (btn as HTMLButtonElement).dataset.id;
+            const { error } = await supabase.from('messages').delete().eq('id', id);
+            if (!error) loadMessages(currentPage);
+            else alert("Error al eliminar: " + error.message);
+          });
         });
       }
 
@@ -86,6 +159,14 @@ import Layout from '../../layouts/Layout.astro';
       if (spinner) spinner.classList.add('hidden');
     }
 
-    loadMessages();
+    document.getElementById('mark-all-read')?.addEventListener('click', async () => {
+      await supabase.from('messages').update({ read: true }).eq('read', false);
+      loadMessages(currentPage);
+    });
+
+    document.getElementById('prev-page')?.addEventListener('click', () => { currentPage--; loadMessages(currentPage); });
+    document.getElementById('next-page')?.addEventListener('click', () => { currentPage++; loadMessages(currentPage); });
+
+    loadMessages(0);
   }
 </script>

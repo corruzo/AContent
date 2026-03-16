@@ -169,27 +169,37 @@ import Layout from '../../layouts/Layout.astro';
   async function fetchStats() {
       try {
           const [
-              { count: visits },
-              { count: leads },
+              { data: visitsData },
+              { count: totalLeads },
+              { count: unreadLeads },
               { count: portfolio },
               { count: services }
           ] = await Promise.all([
-              supabase.from('analytics').select('*', { count: 'exact', head: true }),
+              supabase.from('analytics').select('session_id'),
               supabase.from('messages').select('*', { count: 'exact', head: true }),
+              supabase.from('messages').select('*', { count: 'exact', head: true }).eq('read', false),
               supabase.from('portfolio').select('*', { count: 'exact', head: true }),
               supabase.from('services').select('*', { count: 'exact', head: true })
           ]);
 
-          const totalVisits = visits || 0;
-          const totalLeads = leads || 0;
+          // Count unique sessions for accurate visit numbers
+          const uniqueSessions = visitsData ? new Set(visitsData.map(r => r.session_id)).size : 0;
+          const leadsTotal = totalLeads || 0;
           const totalItems = (portfolio || 0) + (services || 0);
 
-          document.getElementById('stat-visits').innerText = totalVisits.toLocaleString();
-          document.getElementById('stat-leads').innerText = totalLeads.toLocaleString();
+          document.getElementById('stat-visits').innerText = uniqueSessions.toLocaleString();
           document.getElementById('stat-content').innerText = totalItems.toLocaleString();
 
-          if (totalVisits > 0) {
-              const conv = ((totalLeads / totalVisits) * 100).toFixed(1);
+          // Show unread leads badge if there are new messages
+          const leadsEl = document.getElementById('stat-leads');
+          if (unreadLeads && unreadLeads > 0 && leadsEl) {
+              leadsEl.innerHTML = `${leadsTotal} <span style="font-size:9px;background:#fffbeb;color:#f59e0b;padding:2px 8px;border-radius:9999px;margin-left:4px;font-weight:900">${unreadLeads} NEW</span>`;
+          } else if (leadsEl) {
+              leadsEl.innerText = leadsTotal.toLocaleString();
+          }
+
+          if (uniqueSessions > 0) {
+              const conv = ((leadsTotal / uniqueSessions) * 100).toFixed(1);
               document.getElementById('stat-conv').innerText = `${conv}%`;
           }
       } catch (e) {
