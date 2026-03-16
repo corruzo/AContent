@@ -16,6 +16,8 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://acontent.net');
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
 <!doctype html>
@@ -141,7 +143,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://acontent
       }
     </style>
 
-    <script is:inline>
+    <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
       (function() {
         const init = () => {
           // Reveal Animations
@@ -154,24 +156,40 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://acontent
           }, { threshold: 0.1 });
 
           document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-          
-          // Anonymous Analytics Tracking
-          const trackVisit = async () => {
-            if (window.location.pathname.startsWith('/admin')) return;
-            try {
-              const { supabase } = await import('../lib/supabase');
-              await supabase.from('analytics').insert([{ 
-                path: window.location.pathname,
-                user_agent: navigator.userAgent
-              }]);
-            } catch (e) {
-              // Fail silently
+        };
+
+        // Anonymous Analytics Tracking via Supabase REST API
+        const trackVisit = async () => {
+          if (window.location.pathname.startsWith('/admin')) return;
+          if (!supabaseUrl || supabaseUrl.includes('placeholder')) return;
+          try {
+            // Generate or retrieve session ID
+            let sessionId = sessionStorage.getItem('_sid');
+            if (!sessionId) {
+              sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+              sessionStorage.setItem('_sid', sessionId);
             }
-          };
-          trackVisit();
+            await fetch(`${supabaseUrl}/rest/v1/analytics`, {
+              method: 'POST',
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+              },
+              body: JSON.stringify({
+                session_id: sessionId,
+                page_path: window.location.pathname,
+                visitor_info: { referrer: document.referrer, lang: navigator.language }
+              })
+            });
+          } catch (e) {
+            // Fail silently - analytics should never break the site
+          }
         };
 
         init();
+        trackVisit();
         document.addEventListener('astro:page-load', init);
       })();
     </script>
