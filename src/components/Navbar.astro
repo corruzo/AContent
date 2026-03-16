@@ -1,0 +1,183 @@
+---
+// Navbar.astro
+import { getContactData, getSiteData, cleanWhatsAppNumber, getSiteLogo } from '../utils/data';
+const contactData = await getContactData();
+const siteData = await getSiteData();
+const waNumber = cleanWhatsAppNumber(contactData.phone);
+const siteLogo = await getSiteLogo();
+
+const navLinks = [
+  { href: '#sobre-mi', label: 'Sobre Mí' },
+  { href: '#servicios', label: 'Servicios' },
+  { href: '#portfolio', label: 'Proyectos' },
+  { href: '#contacto', label: 'Contacto' },
+];
+---
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 lg:px-20 py-4 md:py-6 transition-[padding,background-color,box-shadow,border-color] duration-500">
+  <div class="max-w-7xl mx-auto flex items-center justify-between relative z-[110]">
+    
+    <!-- Logo -->
+    <a href="#inicio" id="nav-logo" class="flex items-center gap-3 group transition-all duration-500">
+      <div class="w-14 h-14 md:w-20 md:h-20 flex items-center justify-center group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl">
+        {siteLogo ? (
+          <img src={siteLogo} alt="Logo" class="w-full h-full object-contain logo-img" id="main-logo" />
+        ) : (
+          <div class="w-full h-full bg-[#1C2B3A] rounded-xl flex items-center justify-center font-display text-3xl md:text-4xl text-white">
+            {siteData.brandName.charAt(0)}
+          </div>
+        )}
+      </div>
+      <div class="flex flex-col leading-tight translate-no brand-text transition-colors duration-500">
+        <span class="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#1C2B3A] leading-none tracking-tight brand-name-text">{siteData.brandName}<span class="text-[#567C8D]">.</span></span>
+        <span class="text-[9px] uppercase tracking-[0.3em] text-[#567C8D]/70 font-black mt-1 brand-sub-text">Marketing Inmobiliario</span>
+      </div>
+    </a>
+
+    <!-- ── DESKTOP NAVIGATION ── -->
+    <div class="hidden md:flex items-center gap-12">
+      <ul class="flex items-center gap-8">
+         {navLinks.map((link) => (
+           <li>
+             <a href={link.href} class="text-[11px] font-black text-[#567C8D] hover:text-[#1C2B3A] uppercase tracking-[0.25em] transition-all relative group py-2">
+               {link.label}
+               <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#1C2B3A] group-hover:w-full transition-all duration-500 rounded-full"></div>
+             </a>
+           </li>
+         ))}
+      </ul>
+      <a href={`https://wa.me/${waNumber}`} target="_blank" class="bg-[#1C2B3A] text-white text-[11px] font-black uppercase tracking-[0.2em] px-8 py-4 rounded-full hover:bg-[#C8D9E6] hover:text-[#1C2B3A] transition-all shadow-xl hover:scale-105 active:scale-95">
+        WhatsApp
+      </a>
+    </div>
+
+    <!-- ── MOBILE MENU BUTTON ── -->
+    <button id="menu-btn" class="md:hidden flex flex-col gap-1.5 w-12 h-12 items-center justify-center bg-[#1C2B3A] border border-white/10 rounded-2xl shadow-xl outline-none active:scale-95 transition-all z-[120]" aria-label="Menu">
+      <span class="burger-bar bar-1 block w-6 h-0.5 bg-white rounded-full transition-all duration-300"></span>
+      <span class="burger-bar bar-2 block w-6 h-0.5 bg-white rounded-full transition-all duration-300"></span>
+    </button>
+  </div>
+
+  <!-- ── MOBILE NAVIGATION (FULLSCREEN OVERLAY) ── -->
+  <div id="mobile-menu" class="fixed inset-0 bg-[#1C2B3A] z-[105] opacity-0 pointer-events-none transition-all duration-500 flex flex-col pt-32 px-10">
+    <div class="flex flex-col gap-3 w-full max-w-sm mx-auto transform translate-y-8 transition-transform duration-700" id="mobile-menu-content">
+       {navLinks.map((link) => (
+         <a href={link.href} class="bg-white/5 border border-white/10 text-white text-left px-8 py-6 rounded-[32px] text-xs font-black uppercase tracking-[0.3em] hover:bg-white hover:text-[#1C2B3A] transition-all duration-300 mobile-link">
+           {link.label}
+         </a>
+       ))}
+       <a href={`https://wa.me/${waNumber}`} target="_blank" class="bg-[#25D366] text-white text-center py-6 rounded-[32px] text-xs font-black uppercase tracking-[0.3em] mt-2 shadow-2xl transition-transform active:scale-95 mobile-link">
+         WhatsApp Directo
+       </a>
+    </div>
+    
+    <div class="mt-auto pb-12 text-center">
+       <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#567C8D]/50">Anais Cruz • Visual Storytelling</p>
+    </div>
+  </div>
+</nav>
+
+<style>
+  /* Base Scrolled State */
+  #navbar.scrolled { 
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.98); 
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(200, 217, 230, 0.5);
+  }
+
+  /* CRITICAL: Menu Open State (Full Cleanup) */
+  #navbar.menu-open {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-bottom-color: transparent !important;
+  }
+  
+  #navbar.menu-open #nav-logo #main-logo {
+    filter: brightness(0) invert(1);
+  }
+  #navbar.menu-open .brand-text span {
+    color: white !important;
+  }
+  #navbar.menu-open .brand-text .brand-sub-text {
+    opacity: 0.5;
+  }
+
+  /* Burger Animation Active */
+  #menu-btn.active .bar-1 { transform: translateY(4px) rotate(45deg); background-color: white !important; }
+  #menu-btn.active .bar-2 { transform: translateY(-4px) rotate(-45deg); background-color: white !important; }
+  #menu-btn.active { 
+    background-color: white; 
+    border-color: transparent; 
+  }
+  #menu-btn.active .burger-bar {
+    background-color: #1C2B3A !important;
+  }
+
+  /* Mobile Menu Activation */
+  #mobile-menu.active { 
+    opacity: 1 !important; 
+    pointer-events: auto !important; 
+  }
+  #mobile-menu.active #mobile-menu-content { 
+    transform: translateY(0); 
+  }
+  #mobile-menu.active .mobile-link { 
+    opacity: 1; 
+  }
+  
+  /* Staggered Delay for Mobile Links */
+  .mobile-link { opacity: 0; transition: all 0.5s ease; }
+  #mobile-menu.active .mobile-link:nth-child(1) { transition-delay: 0.1s; }
+  #mobile-menu.active .mobile-link:nth-child(2) { transition-delay: 0.2s; }
+  #mobile-menu.active .mobile-link:nth-child(3) { transition-delay: 0.3s; }
+  #mobile-menu.active .mobile-link:nth-child(4) { transition-delay: 0.4s; }
+  #mobile-menu.active .mobile-link:nth-child(5) { transition-delay: 0.5s; }
+</style>
+
+<script is:inline>
+  (function() {
+    const init = () => {
+      const btn = document.getElementById('menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      const nav = document.getElementById('navbar');
+      const links = document.querySelectorAll('.mobile-link');
+      
+      if (!btn || !menu) return;
+
+      const toggleMenu = () => {
+        const isOpen = menu.classList.contains('active');
+        menu.classList.toggle('active');
+        btn.classList.toggle('active');
+        if (nav) nav.classList.toggle('menu-open');
+        document.body.style.overflow = isOpen ? '' : 'hidden';
+      };
+
+      btn.onclick = (e) => {
+        e.preventDefault();
+        toggleMenu();
+      };
+
+      links.forEach(link => {
+        link.onclick = () => {
+          menu.classList.remove('active');
+          btn.classList.remove('active');
+          if (nav) nav.classList.remove('menu-open');
+          document.body.style.overflow = '';
+        };
+      });
+
+      // Handle scroll with optimized listener
+      const handleScroll = () => {
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+      };
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); // Initial check
+    };
+
+    init();
+    document.addEventListener('astro:page-load', init);
+  })();
+</script>

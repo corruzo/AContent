@@ -1,0 +1,197 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { getAboutData, getSiteData } from '../utils/data';
+const aboutData = await getAboutData();
+const siteData = await getSiteData();
+
+const imagesAbout = import.meta.glob<{ default: ImageMetadata }>('../assets/about/**/*.{jpeg,jpg,png,webp,svg,JPG,JPEG,PNG,WEBP,SVG}', { eager: true });
+
+// Process gallery from CMS with optimization
+const rawGallery = (aboutData.gallery || []).slice(0, 15);
+const filteredGallery = rawGallery.map(url => {
+  if (!url) return null;
+  if (url.startsWith('http')) return { asset: url, optimizedSrc: url };
+  
+  const nPath = url.replace(/^\.\.\/\.\.\//, '../').replace(/^\.\.\//, '../');
+  const key = Object.keys(imagesAbout).find(k => k.toLowerCase().includes(nPath.toLowerCase()));
+  const asset = key ? imagesAbout[key].default : null;
+  
+  return asset ? { asset, optimizedSrc: asset.src } : null;
+}).filter(Boolean);
+
+// Create a display array (if empty, we show blue placeholders to keep the UI beautiful)
+const hasPhotos = filteredGallery.length > 0;
+const displayItems = hasPhotos ? filteredGallery : [null, null, null, null]; // 4 slots for placeholders
+---
+
+<section id="sobre-mi" class="py-12 md:py-20 bg-white overflow-hidden selection:bg-[#2F4156] selection:text-white">
+  
+  <!-- ── PHOTO SLIDER (Infinite Marquee Style + Touch Scroll) ── -->
+  <div class="mb-12 md:mb-16 group/slider relative overflow-x-auto md:overflow-hidden hide-scrollbar scroll-smooth touch-pan-x" id="slider-container">
+    <div class="flex items-center gap-4 w-max animate-marquee-slow md:hover:!animate-play-state-paused" id="photo-slider">
+        {/* We repeat the array for infinite scroll simulation */}
+        {[...displayItems, ...displayItems, ...displayItems].map((img, i) => (
+          <div class={`flex-shrink-0 w-[80vw] md:w-[450px] aspect-[14/10] md:aspect-[16/10] rounded-[32px] md:rounded-[48px] overflow-hidden shadow-xl group relative transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]
+                      ${!img ? 'bg-[#1C2B3A] flex items-center justify-center border border-[#C8D9E6]/20' : 'cursor-pointer about-photo-card'}`}>
+            {img ? (
+              typeof img.asset === 'string' ? (
+                <img 
+                  src={img.asset} 
+                  alt={`Trayectoria ${i + 1}`} 
+                  class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                  data-full-src={img.optimizedSrc}
+                  loading="lazy"
+                />
+              ) : (
+                <Image 
+                  src={img.asset} 
+                  alt={`Trayectoria ${i + 1}`} 
+                  class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                  data-full-src={img.optimizedSrc}
+                  format="webp"
+                  quality={80}
+                  loading="lazy"
+                />
+              )
+            ) : (
+              <div class="flex flex-col items-center gap-4">
+                <span class="text-[#C8D9E6]/30 font-display text-4xl italic font-black">{siteData.brandName}</span>
+                <p class="text-[#C8D9E6]/20 text-[10px] uppercase tracking-widest font-bold">Sin imagen</p>
+              </div>
+            )}
+            {img && (
+              <>
+                <div class="absolute inset-0 bg-[#1C2B3A]/10 group-hover:bg-transparent transition-colors duration-500"></div>
+                <div class="absolute bottom-6 right-6 md:bottom-10 md:right-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
+
+    <!-- ── CONTENT ── -->
+    <div class="grid lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+      <div class="lg:col-span-12 xl:col-span-7">
+        <div class="reveal inline-flex items-center gap-3 mb-8 text-center md:text-left">
+          <div class="w-10 h-px bg-[#567C8D]"></div>
+          <span class="text-[11px] font-black text-[#567C8D] tracking-[0.35em] uppercase">Trayectoria & Visión</span>
+        </div>
+        <h2 class="reveal reveal-delay-1 font-display text-4xl md:text-7xl xl:text-[5.5rem] font-bold text-[#1C2B3A] leading-[1] mb-12">
+          {aboutData.mainTitle}
+        </h2>
+      </div>
+      <div class="lg:col-span-12 xl:col-span-5 reveal reveal-delay-2 lg:pl-12 lg:border-l-4 lg:border-[#567C8D] flex flex-col justify-center">
+        <p class="text-xl md:text-2xl text-[#2F4156] font-medium leading-[1.6] mb-8">
+          {aboutData.description}
+        </p>
+        <div class="flex items-center gap-4 text-[#567C8D] font-bold text-xs uppercase tracking-widest">
+          <div class="w-2 h-2 rounded-full bg-[#567C8D] animate-pulse"></div>
+          {aboutData.experience}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Lightbox for About Photos (UNIFIED DESIGN) -->
+<div id="about-lightbox" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
+  <div class="absolute inset-0 bg-[#1C2B3A]/95 backdrop-blur-3xl"></div>
+  
+  <button id="close-about-lightbox" class="absolute top-6 right-6 md:top-10 md:right-20 text-white p-4 md:p-5 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[1030] backdrop-blur-md border border-white/10 active:scale-90">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+
+  <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="about-lb-content">
+      <img id="lightbox-img" src="" alt="Vista previa ampliada" class="max-w-full max-h-[85vh] w-auto h-auto object-contain shadow-2xl rounded-sm transition-all duration-500 opacity-0 translate-y-4 pointer-events-auto" />
+  </div>
+</div>
+
+<style>
+  @keyframes marquee-slow {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-33.33%, 0, 0); }
+  }
+  .animate-marquee-slow { 
+    animation: marquee-slow 60s linear infinite; 
+    will-change: transform;
+  }
+  
+  /* Pause animation on hover (desktop) or active (mobile) */
+  #photo-slider:hover,
+  #slider-container:active #photo-slider {
+    animation-play-state: paused;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .about-photo-card {
+    will-change: transform;
+    user-select: none;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    const initAbout = () => {
+      const cards = document.querySelectorAll('.about-photo-card');
+      const lightbox = document.getElementById('about-lightbox');
+      const lbImg = document.getElementById('lightbox-img');
+      const closeBtn = document.getElementById('close-about-lightbox');
+
+      if (!cards.length || !lightbox) return;
+
+      const openLb = (src) => {
+        lbImg.src = src;
+        lightbox.classList.remove('opacity-0', 'pointer-events-none');
+        document.body.style.overflow = 'hidden';
+        
+        lbImg.onload = () => {
+            lbImg.classList.remove('opacity-0', 'translate-y-4');
+        };
+        if (lbImg.complete) {
+            lbImg.classList.remove('opacity-0', 'translate-y-4');
+        }
+      };
+
+      const closeLb = () => {
+        lightbox.classList.add('opacity-0', 'pointer-events-none');
+        lbImg.classList.add('opacity-0', 'translate-y-4');
+        document.body.style.overflow = '';
+      };
+
+      cards.forEach(card => {
+        card.onclick = (e) => {
+          const img = card.querySelector('img');
+          if (img && img.dataset.fullSrc) {
+            openLb(img.dataset.fullSrc);
+          }
+        };
+      });
+
+      if (closeBtn) closeBtn.onclick = closeLb;
+      lightbox.onclick = (e) => { if(e.target === lightbox || e.target.id === 'about-lb-content') closeLb(); };
+      
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLb();
+      });
+    };
+
+    initAbout();
+    document.addEventListener('astro:page-load', initAbout);
+    document.addEventListener('astro:after-swap', initAbout);
+  })();
+</script>

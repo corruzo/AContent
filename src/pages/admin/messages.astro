@@ -1,0 +1,91 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Buzón de Ideas - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-8">
+        <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] hover:text-[#1C2B3A] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Dashboard
+        </a>
+        <div id="loading-spinner" class="flex items-center gap-3">
+            <span class="text-[9px] font-black uppercase tracking-widest text-[#567C8D]/50">Sincronizando...</span>
+            <div class="w-5 h-5 border-2 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+
+      <div class="bg-white p-12 rounded-[48px] shadow-2xl">
+        <h1 class="font-display text-4xl font-bold text-[#1C2B3A] mb-12">Buzón de Leads</h1>
+        
+        <div id="messages-container" class="space-y-6 opacity-0 transition-opacity duration-1000">
+           <!-- Messages injected here -->
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    async function loadMessages() {
+      const container = document.getElementById('messages-container');
+      const spinner = document.getElementById('loading-spinner');
+      if (!container) return;
+
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !messages || messages.length === 0) {
+        container.innerHTML = '<p class="text-center py-20 text-[#567C8D] font-bold uppercase tracking-widest text-xs">No hay mensajes aún.</p>';
+      } else {
+        container.innerHTML = messages.map(msg => `
+          <div class="bg-[#F5EFEB]/50 p-8 rounded-3xl border border-[#C8D9E6]/20 group hover:bg-white hover:shadow-xl transition-all relative">
+            <button class="delete-msg-btn absolute top-6 right-6 p-2 text-red-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" data-id="${msg.id}" title="Eliminar mensaje">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+            <div class="flex justify-between items-start mb-6 pr-10">
+              <div>
+                <h3 class="font-bold text-lg text-[#1C2B3A]">${msg.name}</h3>
+                <p class="text-xs text-[#567C8D] font-medium">${msg.email}</p>
+              </div>
+              <span class="text-[9px] font-black text-[#567C8D]/40 uppercase tracking-widest">
+                ${new Date(msg.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
+            </div>
+            <p class="text-sm text-[#2F4156] leading-relaxed italic">"${msg.message}"</p>
+          </div>
+        `).join('');
+
+        // Attach delete events
+        document.querySelectorAll('.delete-msg-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('¿Eliminar este mensaje?')) return;
+                const id = (btn as HTMLButtonElement).dataset.id;
+                const { error } = await supabase.from('messages').delete().eq('id', id);
+                if (!error) loadMessages();
+                else alert("Error al eliminar: " + error.message);
+            });
+        });
+      }
+
+      container.classList.remove('opacity-0');
+      if (spinner) spinner.classList.add('hidden');
+    }
+
+    loadMessages();
+  }
+</script>

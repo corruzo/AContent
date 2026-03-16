@@ -1,0 +1,207 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// We empty these to ensure build doesn't fail if Supabase is missing.
+// The actual data will be loaded in the browser.
+const siteData = { brandName: '', seoDescription: '' };
+const contactData = { email: '', phone: '' };
+---
+
+<Layout title="Editar Identidad - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-8 hover:text-[#1C2B3A] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Volver al Dashboard
+      </a>
+
+      <div class="bg-white p-12 rounded-[48px] shadow-2xl">
+        <div class="flex justify-between items-center mb-12">
+            <h1 class="font-display text-4xl font-bold text-[#1C2B3A]">Identidad del Sitio</h1>
+            <div id="loading-spinner" class="flex items-center gap-3">
+                <span class="text-[9px] font-black uppercase tracking-widest text-[#567C8D]/50">Sincronizando...</span>
+                <div class="w-5 h-5 border-2 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+        
+        <form id="site-form" class="grid md:grid-cols-2 gap-10 opacity-0 transition-opacity duration-1000">
+          <div class="space-y-8">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] text-[#567C8D]/60 border-b border-[#F5EFEB] pb-2">Marca & SEO</h3>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Nombre de Marca</label>
+              <input name="brand_name" id="field-brand" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] font-medium" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Nombre Completo</label>
+              <input name="full_name" id="field-fullname" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Descripción SEO</label>
+              <textarea name="seo_description" id="field-seo" rows="4" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] text-sm leading-relaxed"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Tagline del Footer</label>
+              <input name="footer_tagline" id="field-tagline" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+          </div>
+
+          <div class="space-y-8">
+             <h3 class="text-xs font-black uppercase tracking-[0.3em] text-[#567C8D]/60 border-b border-[#F5EFEB] pb-2">Contacto & Redes</h3>
+             <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Email de Contacto</label>
+              <input name="email" id="field-email" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">WhatsApp</label>
+              <input name="phone" id="field-phone" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Instagram URL</label>
+              <input name="instagram_url" id="field-instagram" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">LinkedIn URL</label>
+              <input name="linkedin_url" id="field-linkedin" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+          </div>
+
+          <div class="md:col-span-2 pt-8 border-t border-[#F5EFEB]">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-6">Logo de la Marca</label>
+            <div class="flex items-center gap-10">
+                <div id="logo-preview" class="w-32 h-32 rounded-3xl bg-[#F5EFEB] flex items-center justify-center overflow-hidden border-2 border-dashed border-[#567C8D]/20">
+                    <span class="text-xs font-bold text-[#567C8D]/40">Sin Logo</span>
+                </div>
+                <div class="space-y-4">
+                    <input type="file" id="logo-upload" accept="image/*" class="hidden" />
+                    <label for="logo-upload" class="inline-block bg-[#F5EFEB] text-[#1C2B3A] px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-[#1C2B3A] hover:text-white transition-all">
+                        Subir Nuevo Logo
+                    </label>
+                    <p class="text-[9px] text-[#567C8D] italic">Formato recomendado: PNG o SVG transparente</p>
+                    <input type="hidden" name="logo_url" id="field-logo-url" />
+                </div>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 pt-12 border-t border-[#F5EFEB]">
+            <button type="submit" id="save-btn" class="bg-[#1C2B3A] text-white px-12 py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95 disabled:opacity-50">
+              Guardar Cambios
+            </button>
+            <span id="save-status" class="ml-6 text-xs font-bold text-green-600 opacity-0 transition-opacity">¡Configuración actualizada!</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getSiteData, getContactData } from '../../utils/data';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const form = document.getElementById('site-form') as HTMLFormElement;
+    const spinner = document.getElementById('loading-spinner');
+    const status = document.getElementById('save-status');
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const logoUpload = document.getElementById('logo-upload') as HTMLInputElement;
+    const logoPreview = document.getElementById('logo-preview');
+
+    const fields = {
+        brand: document.getElementById('field-brand') as HTMLInputElement,
+        fullname: document.getElementById('field-fullname') as HTMLInputElement,
+        seo: document.getElementById('field-seo') as HTMLTextAreaElement,
+        tagline: document.getElementById('field-tagline') as HTMLInputElement,
+        email: document.getElementById('field-email') as HTMLInputElement,
+        phone: document.getElementById('field-phone') as HTMLInputElement,
+        instagram: document.getElementById('field-instagram') as HTMLInputElement,
+        linkedin: document.getElementById('field-linkedin') as HTMLInputElement,
+        logoUrl: document.getElementById('field-logo-url') as HTMLInputElement
+    };
+
+    async function loadData() {
+        try {
+            const siteData = await getSiteData();
+            const contactData = await getContactData();
+
+            if (fields.brand) fields.brand.value = siteData.brandName;
+            if (fields.fullname) fields.fullname.value = siteData.fullName;
+            if (fields.seo) fields.seo.value = siteData.seoDescription;
+            if (fields.tagline) fields.tagline.value = contactData.footerTagline;
+            if (fields.email) fields.email.value = contactData.email;
+            if (fields.phone) fields.phone.value = contactData.phone;
+            if (fields.instagram) fields.instagram.value = contactData.social.instagram;
+            if (fields.linkedin) fields.linkedin.value = contactData.social.linkedin;
+            
+            if (siteData.logo) {
+                fields.logoUrl.value = siteData.logo;
+                if (logoPreview) logoPreview.innerHTML = `<img src="${siteData.logo}" class="max-w-full max-h-full object-contain p-2" />`;
+            }
+
+            if (form) form.classList.remove('opacity-0');
+            if (spinner) spinner.classList.add('hidden');
+        } catch (e) {
+            console.error("Error loading admin data", e);
+        }
+    }
+
+    logoUpload?.addEventListener('change', async () => {
+        const file = logoUpload.files?.[0];
+        if (!file) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `logo-${Date.now()}.${fileExt}`;
+        const filePath = `branding/${fileName}`;
+
+        try {
+            const { error } = await supabase.storage.from('assets').upload(filePath, file);
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(filePath);
+            fields.logoUrl.value = publicUrl;
+            if (logoPreview) logoPreview.innerHTML = `<img src="${publicUrl}" class="max-w-full max-h-full object-contain p-2" />`;
+        } catch (err) {
+            alert("Error al subir logo: " + err.message);
+        }
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        const { error } = await supabase
+        .from('site_settings')
+        .update({
+            brand_name: formData.get('brand_name'),
+            full_name: formData.get('full_name'),
+            seo_description: formData.get('seo_description'),
+            footer_tagline: formData.get('footer_tagline'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            instagram_url: formData.get('instagram_url'),
+            linkedin_url: formData.get('linkedin_url'),
+            logo_url: formData.get('logo_url')
+        })
+        .eq('id', 1);
+
+        saveBtn.disabled = false;
+
+        if (!error && status) {
+            status.classList.remove('opacity-0');
+            setTimeout(() => status.classList.add('opacity-0'), 3000);
+        } else if (error) {
+            alert("Error al guardar: " + error.message);
+        }
+    });
+
+    loadData();
+  }
+</script>

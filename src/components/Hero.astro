@@ -1,0 +1,113 @@
+---
+// Hero.astro
+import { Image } from 'astro:assets';
+import { getHeroData, getContactData, getSiteData, normalizeAssetPath } from '../utils/data';
+
+const heroData = await getHeroData();
+const contactData = await getContactData();
+const siteData = await getSiteData();
+
+// Load image metadata
+const images = import.meta.glob<{ default: ImageMetadata }>('../assets/**/*.{jpeg,jpg,png,webp,svg,JPEG,JPG,PNG,WEBP,SVG}', { eager: true });
+
+const isRemoteHero = heroData.image && (typeof heroData.image === 'string') && heroData.image.startsWith('http');
+let heroImage = null;
+
+if (heroData.image && !isRemoteHero) {
+  const normHeroPath = normalizeAssetPath(heroData.image as string);
+  const heroAssetKey = Object.keys(images).find(k => k.toLowerCase() === normHeroPath.toLowerCase());
+  heroImage = heroAssetKey ? images[heroAssetKey].default : null;
+}
+---
+
+<section id="inicio" class="relative min-h-[100dvh] flex items-center overflow-hidden bg-white selection:bg-[#567C8D] selection:text-white">
+  
+  <!-- ── VIEW: DESKTOP (md+) ── -->
+  <div class="hidden md:flex relative w-full min-h-screen items-center pt-24 pb-12">
+    <div class="absolute top-0 right-0 w-[55%] h-full bg-[#F5EFEB] rounded-l-[100px] z-0 shadow-inner"></div>
+    
+    <div class="relative z-10 w-full max-w-7xl mx-auto px-12 lg:px-20 grid grid-cols-12 gap-12 items-center">
+      <div class="col-span-12 lg:col-span-7 hero-text lg:-ml-12 xl:-ml-20">
+        <div class="max-w-xl">
+          <h1 class="font-display text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold text-[#1C2B3A] leading-[0.95] mb-8">
+            {heroData.title || siteData.brandName}
+          </h1>
+          <p class="text-lg text-[#567C8D] font-medium leading-relaxed mb-12 max-w-md">
+            {heroData.subtitle}
+          </p>
+          <div class="flex flex-wrap gap-5">
+            <a href="#portfolio" class="bg-[#567C8D] text-white font-bold px-10 py-5 rounded-full text-xs uppercase tracking-widest hover:bg-[#1C2B3A] transition-all hover:scale-105 shadow-xl shadow-[#567C8D]/20">
+              {heroData.ctaText}
+            </a>
+            <a href="#contacto" class="group flex items-center gap-3 text-[#567C8D] font-bold text-xs uppercase tracking-widest border-b-2 border-[#567C8D] px-2 pb-1 hover:border-[#1C2B3A] hover:text-[#1C2B3A] transition-all">
+              Contactar
+              <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hidden lg:flex col-span-5 justify-end items-center hero-image">
+         <div class="relative w-full max-w-[450px] aspect-[4/5] group">
+            <div class="absolute -bottom-6 -right-6 w-full h-full rounded-[80px] bg-[#C8D9E6]/30 -z-10 group-hover:-bottom-8 group-hover:-right-8 transition-all duration-700"></div>
+             <div class={`w-full h-full rounded-[80px] overflow-hidden border-[12px] border-white shadow-2xl relative ${(!heroImage && !isRemoteHero) ? 'skeleton' : ''}`}>
+              {heroData.image && (
+                isRemoteHero ? (
+                  <img src={heroData.image} alt={siteData.brandName} class="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" loading="eager" />
+                ) : heroImage ? (
+                  <Image src={heroImage} alt={siteData.brandName} class="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" loading="eager" format="webp" />
+                ) : null
+              )}
+            </div>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: MOBILE (Simplified & Centered) ── -->
+  <div class="md:hidden relative w-full flex flex-col pt-32 pb-16 px-6">
+    <div class="absolute top-0 right-0 w-full h-[480px] bg-[#F5EFEB] rounded-b-[60px] z-0"></div>
+    
+    <div class="relative z-10 flex flex-col items-center text-center">
+      <div class="w-[75%] max-w-[280px] aspect-[4/5] relative mb-12 hero-image">
+        <div class="absolute -bottom-4 -right-4 w-full h-full rounded-[40px] bg-[#2F4156]/10 -z-10"></div>
+        <div class={`w-full h-full rounded-[40px] overflow-hidden border-8 border-white shadow-xl ${(!heroImage && !isRemoteHero) ? 'skeleton' : ''}`}>
+          {heroData.image && (
+            isRemoteHero ? (
+              <img src={heroData.image} alt={siteData.brandName} class="w-full h-full object-cover object-top" />
+            ) : heroImage ? (
+              <Image src={heroImage} alt={siteData.brandName} class="w-full h-full object-cover object-top" format="webp" />
+            ) : null
+          )}
+        </div>
+      </div>
+
+      <div class="hero-text w-full">
+        <p class="text-[9px] uppercase tracking-[0.3em] text-[#567C8D] font-black mb-4">Estratega Visual</p>
+        <h1 class="font-display text-4xl sm:text-5xl font-bold text-[#1C2B3A] leading-[1] mb-6 px-2">
+            {heroData.title}
+        </h1>
+        <p class="text-sm sm:text-base text-[#567C8D] font-medium leading-relaxed mb-10 opacity-90">
+            {heroData.subtitle}
+        </p>
+        
+        <div class="flex flex-col gap-4 w-full max-w-[280px] mx-auto">
+          <a href="#portfolio" class="bg-[#567C8D] text-white font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+            {heroData.ctaText}
+          </a>
+          <a href="#contacto" class="bg-white/80 border border-[#C8D9E6] text-[#1C2B3A] font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition-all">
+            Contactar Ahora
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<style>
+  .hero-text { animation: heroRevealUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .hero-image { animation: heroRevealIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+  @keyframes heroRevealUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes heroRevealIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+</style>

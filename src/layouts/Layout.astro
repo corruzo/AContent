@@ -1,0 +1,179 @@
+---
+// Layout.astro
+import { ClientRouter } from 'astro:transitions';
+import { getSiteData, getContactData, getSiteLogo } from '../utils/data';
+
+const siteData = await getSiteData();
+const contactData = await getContactData();
+const siteLogo = await getSiteLogo();
+
+const { 
+  title = siteData.brandName, 
+  description = siteData.seoDescription, 
+  image = siteLogo || "/og-image.jpg",
+  brandName = siteData.brandName,
+  fullName = siteData.fullName
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://acontent.net');
+---
+
+<!doctype html>
+<html lang="es" class="scroll-smooth">
+  <head>
+    <script is:inline>
+      // Force JS-enabled class
+      document.documentElement.classList.add('js-enabled');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" href={canonicalURL.toString()} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={fullName} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL.toString()} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, canonicalURL).toString()} />
+    <meta property="og:locale" content="es_CR" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL.toString()} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, canonicalURL).toString()} />
+
+    <!-- Security & Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <link rel="icon" href={siteLogo || "/favicon.svg"} />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": `${brandName} - ${fullName}`,
+      "legalName": fullName,
+      "brand": {
+        "@type": "Brand",
+        "name": brandName
+      },
+      "image": new URL(image, canonicalURL).toString(),
+      "url": canonicalURL.toString(),
+      "telephone": contactData.phone,
+      "email": contactData.email,
+      "priceRange": "$$$",
+      "areaServed": "Costa Rica",
+      "description": description,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": contactData.address,
+        "addressCountry": "CR"
+      },
+      "sameAs": [
+        "https://www.instagram.com/anaiscontent",
+        contactData.social?.instagram,
+        contactData.social?.linkedin
+      ].filter(Boolean)
+    })}>
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body class="bg-white text-[#1C2B3A] antialiased">
+    <slot />
+
+    <style is:global>
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+      :root {
+        --color-primary: #567C8D;
+        --color-secondary: #1C2B3A;
+        --color-bg: #F5EFEB;
+        --color-text: #2F4156;
+      }
+
+      body {
+        font-family: 'Outfit', sans-serif;
+      }
+
+      .font-display {
+        font-family: 'Cormorant Garamond', serif;
+      }
+
+      /* Prevent translation for brand names */
+      .translate-no {
+        unicode-bidi: isolate;
+      }
+
+      .js-enabled .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .reveal.visible {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+
+      .skeleton {
+        background-color: #e2e8f0;
+        background-image: linear-gradient(90deg, #e2e8f0, #f8fafc, #e2e8f0);
+        background-size: 200px 100%;
+        background-repeat: no-repeat;
+        display: inline-block;
+        line-height: 1;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        animation: skeleton-loading 1.5s infinite linear;
+      }
+
+      @keyframes skeleton-loading {
+        0% { background-position: -200px 0; }
+        100% { background-position: calc(200px + 100%) 0; }
+      }
+    </style>
+
+    <script is:inline>
+      (function() {
+        const init = () => {
+          // Reveal Animations
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+              }
+            });
+          }, { threshold: 0.1 });
+
+          document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+          
+          // Anonymous Analytics Tracking
+          const trackVisit = async () => {
+            if (window.location.pathname.startsWith('/admin')) return;
+            try {
+              const { supabase } = await import('../lib/supabase');
+              await supabase.from('analytics').insert([{ 
+                path: window.location.pathname,
+                user_agent: navigator.userAgent
+              }]);
+            } catch (e) {
+              // Fail silently
+            }
+          };
+          trackVisit();
+        };
+
+        init();
+        document.addEventListener('astro:page-load', init);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+---
+// Force refresh: 2026-03-14 01:30
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Acceso Admin">
+  <main class="min-h-screen bg-[#F5EFEB] flex items-center justify-center px-6">
+    <div class="max-w-md w-full bg-white p-12 rounded-[40px] shadow-2xl border border-white/50">
+      <div class="text-center mb-10">
+        <h1 class="font-display text-4xl font-bold text-[#1C2B3A] mb-2">Panel Administrativo</h1>
+        <p class="text-xs text-[#567C8D] uppercase tracking-widest font-bold">Inicia sesión para editar el contenido</p>
+      </div>
+      
+      <form id="login-form" class="space-y-6">
+        <div>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Usuario</label>
+          <input 
+            type="text" 
+            id="username" 
+            required 
+            class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
+            placeholder="Introduce tu usuario"
+          />
+        </div>
+        <div>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Contraseña de Acceso</label>
+          <input 
+            type="password" 
+            id="password" 
+            required 
+            class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
+            placeholder="••••••••"
+          />
+        </div>
+        
+        <button 
+          type="submit" 
+          class="w-full bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-xl hover:bg-[#567C8D] transition-all transform active:scale-95"
+        >
+          Entrar al Panel
+        </button>
+        <p id="error-msg" class="text-xs text-red-500 font-bold text-center h-4"></p>
+      </form>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const form = document.getElementById('login-form');
+  const errorMsg = document.getElementById('error-msg');
+  
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userInput = (document.getElementById('username') as HTMLInputElement).value;
+    const passInput = (document.getElementById('password') as HTMLInputElement).value;
+    
+    if (errorMsg) errorMsg.innerText = 'Validando...';
+
+    const { data, error } = await supabase
+      .from('admin_access')
+      .select('username, password')
+      .eq('id', 1)
+      .single();
+
+    if (!error && data) {
+      if (userInput === data.username && passInput === data.password) {
+        sessionStorage.setItem('admin_access', 'true');
+        window.location.href = '/admin/dashboard';
+      } else {
+        if (errorMsg) errorMsg.innerText = 'Usuario o contraseña incorrectos';
+      }
+    } else {
+      if (errorMsg) errorMsg.innerText = 'Error de conexión con la base de datos';
+    }
+  });
+</script>

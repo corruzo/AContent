@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Static assets (if you want to keep them out)
+# public/assets/
+
+# Astro server
+.astro/
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.production
+.env.local
+
+# Local Netlify folder
+.netlify
+
+# Vercel
+.vercel
+
+# Local asset images (production images come from Supabase Storage)
+src/assets/portfolio/
+src/assets/about/
+src/assets/services/
+src/assets/images/

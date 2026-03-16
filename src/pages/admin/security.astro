@@ -1,0 +1,118 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Seguridad - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-xl mx-auto">
+      <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-8 hover:text-[#1C2B3A] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Volver al Dashboard
+      </a>
+
+      <div class="bg-white p-10 md:p-14 rounded-[48px] shadow-2xl border border-white/50">
+        <div class="mb-12">
+          <h1 class="font-display text-4xl font-bold text-[#1C2B3A] mb-2">Seguridad</h1>
+          <p class="text-xs text-[#567C8D] uppercase tracking-widest font-bold">Cambia tus credenciales de acceso</p>
+        </div>
+        
+        <form id="security-form" class="space-y-8">
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Nuevo Usuario</label>
+            <input 
+              type="text" 
+              id="new-username" 
+              required 
+              class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Nueva Contraseña</label>
+            <input 
+              type="password" 
+              id="new-password" 
+              required 
+              class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
+            />
+          </div>
+          
+          <div class="pt-4">
+            <button 
+              type="submit" 
+              id="save-btn"
+              class="w-full bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-xl hover:bg-[#567C8D] transition-all transform active:scale-95"
+            >
+              Actualizar Credenciales
+            </button>
+          </div>
+          <p id="status-msg" class="text-xs font-bold text-center h-4 transition-all"></p>
+        </form>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const form = document.getElementById('security-form') as HTMLFormElement;
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const msg = document.getElementById('status-msg');
+
+    const usernameInput = document.getElementById('new-username') as HTMLInputElement;
+    const passwordInput = document.getElementById('new-password') as HTMLInputElement;
+
+    // Load current
+    async function loadCurrent() {
+        const { data } = await supabase.from('admin_access').select('username, password').eq('id', 1).single();
+        if (data) {
+            usernameInput.value = data.username;
+            passwordInput.value = data.password;
+        }
+    }
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      saveBtn.disabled = true;
+      if (msg) {
+          msg.innerText = 'Guardando...';
+          msg.className = 'text-xs font-bold text-center text-[#567C8D]';
+      }
+
+      const { error } = await supabase
+        .from('admin_access')
+        .update({
+          username: usernameInput.value,
+          password: passwordInput.value,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 1);
+
+      saveBtn.disabled = false;
+
+      if (!error) {
+        if (msg) {
+            msg.innerText = '¡Credenciales actualizadas correctamente!';
+            msg.className = 'text-xs font-bold text-center text-emerald-500';
+            setTimeout(() => { msg.innerText = ''; }, 3000);
+        }
+      } else {
+        if (msg) {
+            msg.innerText = 'Error al actualizar: ' + error.message;
+            msg.className = 'text-xs font-bold text-center text-red-500';
+        }
+      }
+    });
+
+    loadCurrent();
+  }
+</script>

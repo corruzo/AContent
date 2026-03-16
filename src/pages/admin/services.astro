@@ -1,0 +1,256 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Gestionar Servicios - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-12">
+        <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] hover:text-[#1C2B3A] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Dashboard
+        </a>
+        <h1 class="font-display text-3xl font-bold text-[#1C2B3A] hidden md:block">Gestión de Servicios</h1>
+        <button id="add-service-btn" class="bg-[#1C2B3A] text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95">
+          + Nuevo Servicio
+        </button>
+      </div>
+
+      <div id="loading-spinner" class="py-20 flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-[#567C8D]/60">Cargando servicios...</span>
+      </div>
+
+      <div class="grid gap-6 opacity-0 transition-opacity duration-1000" id="services-list">
+         <!-- Data injected via JS -->
+      </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="service-modal" class="fixed inset-0 bg-[#1C2B3A]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
+        <div class="bg-white rounded-[40px] max-w-2xl w-full p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="modal-title" class="font-display text-3xl font-bold text-[#1C2B3A]">Nuevo Servicio</h2>
+                <button id="close-modal" class="text-[#567C8D] hover:text-[#1C2B3A]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form id="service-form" class="space-y-6">
+                <input type="hidden" id="service-id" name="id" />
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Título</label>
+                        <input type="text" id="field-title" name="title" required class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Icono ( camera, video, drone, phone, home, branding )</label>
+                        <select id="field-icon" name="icon" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]">
+                            <option value="camera">Fotografía (camera)</option>
+                            <option value="video">Video (video)</option>
+                            <option value="drone">Drone (drone)</option>
+                            <option value="phone">Social Media (phone)</option>
+                            <option value="home">Inmuebles (home)</option>
+                            <option value="branding">Branding (branding)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Subtítulo / Especialidad</label>
+                    <input type="text" id="field-subtitle" name="subtitle" placeholder="Ej: Estrategia Residencial" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Descripción</label>
+                    <textarea id="field-description" name="description" rows="4" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] text-sm leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Etiqueta (Opcional)</label>
+                    <input type="text" id="field-tag" name="tag" placeholder="Ej: Popular" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                </div>
+
+                <div class="pt-6 border-t border-[#F5EFEB] flex flex-col md:flex-row gap-4">
+                    <button type="submit" id="save-service-btn" class="flex-grow bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl disabled:opacity-50">
+                        Guardar Servicio
+                    </button>
+                    <button type="button" id="delete-confirm-btn" class="hidden bg-red-50 text-red-500 px-8 py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-red-500 hover:text-white transition-all">
+                        Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getServices } from '../../utils/data';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const listContainer = document.getElementById('services-list');
+    const spinner = document.getElementById('loading-spinner');
+    const modal = document.getElementById('service-modal');
+    const serviceForm = document.getElementById('service-form') as HTMLFormElement;
+    const addBtn = document.getElementById('add-service-btn');
+    const closeBtn = document.getElementById('close-modal');
+    const deleteBtn = document.getElementById('delete-confirm-btn');
+
+    async function loadServices() {
+        try {
+            if (spinner) spinner.classList.remove('hidden');
+            if (listContainer) listContainer.classList.add('opacity-0');
+            
+            const services = await getServices();
+            if (!listContainer) return;
+
+            listContainer.innerHTML = services.map(s => `
+                <div class="bg-white p-8 rounded-[40px] shadow-lg flex flex-col md:flex-row items-center gap-8 group border border-transparent hover:border-[#567C8D]/20 transition-all">
+                    <div class="w-16 h-16 rounded-2xl bg-[#F5EFEB] flex items-center justify-center shrink-0">
+                        <span class="text-2xl">${getIconEmoji(s.icon)}</span>
+                    </div>
+                    <div class="flex-grow text-center md:text-left">
+                        <div class="flex items-center gap-3 mb-1 justify-center md:justify-start">
+                            <h3 class="text-2xl font-bold text-[#1C2B3A]">${s.title}</h3>
+                            ${s.tag ? `<span class="bg-[#567C8D] text-white text-[8px] font-black uppercase px-2 py-1 rounded-full">${s.tag}</span>` : ''}
+                        </div>
+                        <p class="text-[10px] text-[#567C8D] uppercase tracking-widest font-black opacity-70 mb-2">${s.subtitle || 'Servicio'}</p>
+                        <p class="text-sm text-[#1C2B3A]/60 line-clamp-2">${s.description || ''}</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="edit-btn p-4 rounded-xl bg-[#F5EFEB] text-[#1C2B3A] hover:bg-[#1C2B3A] hover:text-white transition-all active:scale-90" 
+                                data-service="${btoa(JSON.stringify(s))}" title="Editar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            if (services.length === 0) {
+                listContainer.innerHTML = '<p class="text-center py-20 text-[#567C8D] font-bold uppercase tracking-widest text-xs">No hay servicios para mostrar.</p>';
+            }
+
+            listContainer.classList.remove('opacity-0');
+            if (spinner) spinner.classList.add('hidden');
+
+            // Attach edit events
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const encodedData = (btn as HTMLButtonElement).dataset.service || '';
+                    const data = JSON.parse(atob(encodedData));
+                    openModal(data);
+                });
+            });
+        } catch (e) {
+            console.error("Error loading services", e);
+        }
+    }
+
+    function getIconEmoji(icon: string) {
+        const emojis: Record<string, string> = {
+            camera: '📷',
+            video: '🎥',
+            drone: '🚁',
+            phone: '📱',
+            home: '🏠',
+            branding: '🎨'
+        };
+        return emojis[icon] || '✨';
+    }
+
+    function openModal(service: any = null) {
+        serviceForm.reset();
+        
+        if (service) {
+            document.getElementById('modal-title')!.innerText = 'Editar Servicio';
+            (document.getElementById('service-id') as HTMLInputElement).value = service.id;
+            (document.getElementById('field-title') as HTMLInputElement).value = service.title;
+            (document.getElementById('field-icon') as HTMLSelectElement).value = service.icon;
+            (document.getElementById('field-subtitle') as HTMLInputElement).value = service.subtitle || '';
+            (document.getElementById('field-description') as HTMLTextAreaElement).value = service.description || '';
+            (document.getElementById('field-tag') as HTMLInputElement).value = service.tag || '';
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+        } else {
+            document.getElementById('modal-title')!.innerText = 'Nuevo Servicio';
+            (document.getElementById('service-id') as HTMLInputElement).value = '';
+            if (deleteBtn) deleteBtn.classList.add('hidden');
+        }
+
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+    }
+
+    function closeModal() {
+        modal?.classList.add('hidden');
+        modal?.classList.remove('flex');
+    }
+
+    addBtn?.addEventListener('click', () => openModal());
+    closeBtn?.addEventListener('click', closeModal);
+
+    serviceForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('save-service-btn') as HTMLButtonElement;
+        saveBtn.disabled = true;
+
+        const formData = new FormData(serviceForm);
+        const payload = {
+            title: formData.get('title'),
+            icon: formData.get('icon'),
+            subtitle: formData.get('subtitle'),
+            description: formData.get('description'),
+            tag: formData.get('tag')
+        };
+
+        const id = formData.get('id');
+
+        try {
+            let error;
+            if (id) {
+                const { error: err } = await supabase.from('services').update(payload).eq('id', id);
+                error = err;
+            } else {
+                const { error: err } = await supabase.from('services').insert([payload]);
+                error = err;
+            }
+
+            if (error) throw error;
+            
+            closeModal();
+            loadServices();
+        } catch (err: any) {
+            alert("Error al guardar: " + err.message);
+        } finally {
+            saveBtn.disabled = false;
+        }
+    });
+
+    deleteBtn?.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este servicio?')) return;
+        
+        const id = (document.getElementById('service-id') as HTMLInputElement).value;
+        if (!id) return;
+
+        try {
+            const { error } = await supabase.from('services').delete().eq('id', id);
+            if (error) throw error;
+            closeModal();
+            loadServices();
+        } catch (err: any) {
+            alert("Error al eliminar: " + err.message);
+        }
+    });
+
+    loadServices();
+  }
+</script>

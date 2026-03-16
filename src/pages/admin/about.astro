@@ -1,0 +1,189 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Editar Sobre Mí - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-8 hover:text-[#1C2B3A] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Volver al Dashboard
+      </a>
+
+      <div class="bg-white p-12 rounded-[48px] shadow-2xl">
+        <div class="flex justify-between items-center mb-12">
+            <h1 class="font-display text-4xl font-bold text-[#1C2B3A]">Sobre Mí</h1>
+            <div id="loading-spinner" class="flex items-center gap-3">
+                <span class="text-[9px] font-black uppercase tracking-widest text-[#567C8D]/50">Sincronizando...</span>
+                <div class="w-5 h-5 border-2 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+        
+        <form id="about-form" class="space-y-10 opacity-0 transition-opacity duration-1000">
+          <div class="grid md:grid-cols-2 gap-10">
+            <div class="space-y-8">
+              <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Título de la Sección</label>
+                <input name="main_title" id="field-title" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] font-medium" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Biografía / Descripción</label>
+                <textarea name="description" id="field-description" rows="6" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] text-sm leading-relaxed"></textarea>
+              </div>
+            </div>
+
+            <div class="space-y-8">
+               <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Experiencia / Tagline</label>
+                <input name="experience" id="field-experience" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Galería de Imágenes (Trayectoria)</label>
+                <div class="grid grid-cols-3 gap-4 mb-4" id="gallery-preview">
+                    <!-- Images injected here -->
+                </div>
+                <input type="file" id="gallery-upload" accept="image/*" multiple class="hidden" />
+                <label for="gallery-upload" class="inline-block bg-[#F5EFEB] text-[#1C2B3A] px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-[#1C2B3A] hover:text-white transition-all w-full text-center">
+                    + Añadir Fotos a la Galería
+                </label>
+                <input type="hidden" name="gallery" id="field-gallery-json" />
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-8 border-t border-[#F5EFEB]">
+            <button type="submit" id="save-btn" class="bg-[#1C2B3A] text-white px-12 py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95 disabled:opacity-50">
+              Guardar Cambios
+            </button>
+            <span id="save-status" class="ml-6 text-xs font-bold text-green-600 opacity-0 transition-opacity">¡Actualizado con éxito!</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getAboutData } from '../../utils/data';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const form = document.getElementById('about-form') as HTMLFormElement;
+    const spinner = document.getElementById('loading-spinner');
+    const status = document.getElementById('save-status');
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const galleryUpload = document.getElementById('gallery-upload') as HTMLInputElement;
+    const galleryPreview = document.getElementById('gallery-preview');
+    const galleryJsonInput = document.getElementById('field-gallery-json') as HTMLInputElement;
+
+    let currentGallery: string[] = [];
+
+    async function loadData() {
+        try {
+            const aboutData = await getAboutData();
+
+            (document.getElementById('field-title') as HTMLInputElement).value = aboutData.mainTitle;
+            (document.getElementById('field-description') as HTMLTextAreaElement).value = aboutData.description;
+            (document.getElementById('field-experience') as HTMLInputElement).value = aboutData.experience;
+            
+            currentGallery = aboutData.gallery || [];
+            updateGalleryUI();
+
+            if (form) form.classList.remove('opacity-0');
+            if (spinner) spinner.classList.add('hidden');
+        } catch (e) {
+            console.error("Error loading about data", e);
+        }
+    }
+
+    function updateGalleryUI() {
+        if (!galleryPreview) return;
+        galleryPreview.innerHTML = currentGallery.map((url, index) => `
+            <div class="relative aspect-square rounded-xl overflow-hidden group border border-[#567C8D]/10">
+                <img src="${url}" class="w-full h-full object-cover" />
+                <button type="button" class="remove-img absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold text-[10px] uppercase" data-index="${index}">
+                    Eliminar
+                </button>
+            </div>
+        `).join('');
+
+        galleryJsonInput.value = JSON.stringify(currentGallery);
+
+        document.querySelectorAll('.remove-img').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt((btn as HTMLButtonElement).dataset.index!);
+                currentGallery.splice(index, 1);
+                updateGalleryUI();
+            });
+        });
+    }
+
+    galleryUpload?.addEventListener('change', async () => {
+        const files = galleryUpload.files;
+        if (!files || files.length === 0) return;
+
+        saveBtn.disabled = true;
+        const loadingMsg = document.createElement('p');
+        loadingMsg.innerText = "Subiendo imágenes...";
+        loadingMsg.className = "text-[9px] font-bold text-[#567C8D] mt-2";
+        galleryPreview?.appendChild(loadingMsg);
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `about-${Date.now()}-${i}.${fileExt}`;
+            const filePath = `about/${fileName}`;
+
+            try {
+                const { error } = await supabase.storage.from('assets').upload(filePath, file);
+                if (error) throw error;
+
+                const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(filePath);
+                currentGallery.push(publicUrl);
+            } catch (err: any) {
+                alert("Error al subir imagen " + file.name + ": " + err.message);
+            }
+        }
+
+        saveBtn.disabled = false;
+        loadingMsg.remove();
+        updateGalleryUI();
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        const { error } = await supabase
+        .from('about')
+        .update({
+            main_title: formData.get('main_title'),
+            description: formData.get('description'),
+            experience: formData.get('experience'),
+            gallery: JSON.parse(formData.get('gallery') as string)
+        })
+        .eq('id', 1);
+
+        saveBtn.disabled = false;
+
+        if (!error && status) {
+            status.classList.remove('opacity-0');
+            setTimeout(() => status.classList.add('opacity-0'), 3000);
+        } else if (error) {
+            alert("Error al guardar: " + error.message);
+        }
+    });
+
+    loadData();
+  }
+</script>

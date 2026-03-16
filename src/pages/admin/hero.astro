@@ -1,0 +1,151 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Editar Hero - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-8 hover:text-[#1C2B3A] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Volver al Dashboard
+      </a>
+
+      <div class="bg-white p-12 rounded-[48px] shadow-2xl">
+        <div class="flex justify-between items-center mb-12">
+            <h1 class="font-display text-4xl font-bold text-[#1C2B3A]">Encabezado (Hero)</h1>
+            <div id="loading-spinner" class="flex items-center gap-3">
+                <span class="text-[9px] font-black uppercase tracking-widest text-[#567C8D]/50">Sincronizando...</span>
+                <div class="w-5 h-5 border-2 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+        
+        <form id="hero-form" class="grid md:grid-cols-2 gap-10 opacity-0 transition-opacity duration-1000">
+          <div class="space-y-8">
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Título Principal</label>
+              <input name="title" id="field-title" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] font-bold text-lg" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Subtítulo / Eslogan</label>
+              <textarea name="subtitle" id="field-subtitle" rows="4" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] text-sm leading-relaxed"></textarea>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Texto del Botón (CTA)</label>
+              <input name="cta_text" id="field-cta" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+            </div>
+          </div>
+
+          <div class="space-y-8">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Imagen de Portada</label>
+            <div id="hero-preview" class="w-full aspect-[4/5] rounded-[40px] bg-[#F5EFEB] flex items-center justify-center overflow-hidden border-2 border-dashed border-[#567C8D]/20 mb-4">
+                <span class="text-xs font-bold text-[#567C8D]/40">Sin Imagen</span>
+            </div>
+            <input type="file" id="hero-upload" accept="image/*" class="hidden" />
+            <label for="hero-upload" class="inline-block bg-[#F5EFEB] text-[#1C2B3A] px-8 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-[#1C2B3A] hover:text-white transition-all w-full text-center">
+                Cambiar Imagen de Portada
+            </label>
+            <input type="hidden" name="image_url" id="field-image-url" />
+            <p class="text-[9px] text-[#567C8D] italic text-center">Recomendado: 800x1000px (Vertical)</p>
+          </div>
+
+          <div class="md:col-span-2 pt-8 border-t border-[#F5EFEB]">
+            <button type="submit" id="save-btn" class="bg-[#1C2B3A] text-white px-12 py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95 disabled:opacity-50">
+              Guardar Cambios
+            </button>
+            <span id="save-status" class="ml-6 text-xs font-bold text-green-600 opacity-0 transition-opacity">¡Encabezado actualizado!</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getHeroData } from '../../utils/data';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const form = document.getElementById('hero-form') as HTMLFormElement;
+    const spinner = document.getElementById('loading-spinner');
+    const status = document.getElementById('save-status');
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const heroUpload = document.getElementById('hero-upload') as HTMLInputElement;
+    const heroPreview = document.getElementById('hero-preview');
+    const imageUrlInput = document.getElementById('field-image-url') as HTMLInputElement;
+
+    async function loadData() {
+        try {
+            const heroData = await getHeroData();
+
+            (document.getElementById('field-title') as HTMLInputElement).value = heroData.title;
+            (document.getElementById('field-subtitle') as HTMLTextAreaElement).value = heroData.subtitle;
+            (document.getElementById('field-cta') as HTMLInputElement).value = heroData.ctaText;
+            
+            if (heroData.image) {
+                imageUrlInput.value = heroData.image;
+                if (heroPreview) heroPreview.innerHTML = `<img src="${heroData.image}" class="w-full h-full object-cover" />`;
+            }
+
+            if (form) form.classList.remove('opacity-0');
+            if (spinner) spinner.classList.add('hidden');
+        } catch (e) {
+            console.error("Error loading hero data", e);
+        }
+    }
+
+    heroUpload?.addEventListener('change', async () => {
+        const file = heroUpload.files?.[0];
+        if (!file) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `hero-${Date.now()}.${fileExt}`;
+        const filePath = `hero/${fileName}`;
+
+        try {
+            const { error } = await supabase.storage.from('assets').upload(filePath, file);
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(filePath);
+            imageUrlInput.value = publicUrl;
+            if (heroPreview) heroPreview.innerHTML = `<img src="${publicUrl}" class="w-full h-full object-cover" />`;
+        } catch (err: any) {
+            alert("Error al subir imagen: " + err.message);
+        }
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        saveBtn.disabled = true;
+        
+        const formData = new FormData(form);
+        const { error } = await supabase
+        .from('hero')
+        .upsert({
+            id: 1,
+            title: formData.get('title'),
+            subtitle: formData.get('subtitle'),
+            cta_text: formData.get('cta_text'),
+            image_url: formData.get('image_url')
+        });
+
+        saveBtn.disabled = false;
+
+        if (!error && status) {
+            status.classList.remove('opacity-0');
+            setTimeout(() => status.classList.add('opacity-0'), 3000);
+        } else if (error) {
+            alert("Error al guardar: " + error.message);
+        }
+    });
+
+    loadData();
+  }
+</script>

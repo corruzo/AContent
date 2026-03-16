@@ -1,0 +1,239 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Gestionar Partners - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-12">
+        <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] hover:text-[#1C2B3A] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Dashboard
+        </a>
+        <h1 class="font-display text-3xl font-bold text-[#1C2B3A] hidden md:block">Socios & Marcas</h1>
+        <button id="add-partner-btn" class="bg-[#1C2B3A] text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95">
+          + Nueva Marca
+        </button>
+      </div>
+
+      <div id="loading-spinner" class="py-20 flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-[#567C8D]/60">Cargando socios...</span>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 opacity-0 transition-opacity duration-1000" id="partners-list">
+         <!-- Data injected via JS -->
+      </div>
+    </div>
+
+    <!-- Partner Modal -->
+    <div id="partner-modal" class="fixed inset-0 bg-[#1C2B3A]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
+        <div class="bg-white rounded-[40px] max-w-lg w-full p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="modal-title" class="font-display text-2xl font-bold text-[#1C2B3A]">Nueva Marca</h2>
+                <button id="close-modal" class="text-[#567C8D] hover:text-[#1C2B3A]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form id="partner-form" class="space-y-6">
+                <input type="hidden" id="partner-id" name="id" />
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Nombre de la Empresa</label>
+                    <input type="text" id="field-name" name="name" required class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Logo (Fondo transparente recomendado)</label>
+                    <div class="flex flex-col items-center gap-6">
+                        <div id="logo-preview" class="w-full h-32 rounded-2xl bg-[#F5EFEB] flex items-center justify-center overflow-hidden border-2 border-dashed border-[#567C8D]/20">
+                            <span class="text-[20px]">🏢</span>
+                        </div>
+                        <div class="w-full">
+                            <input type="file" id="field-logo" accept="image/*" class="hidden" />
+                            <label for="field-logo" class="inline-block bg-[#F5EFEB] text-[#1C2B3A] px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-[#1C2B3A] hover:text-white transition-all w-full text-center">
+                                Seleccionar Logo
+                            </label>
+                        </div>
+                    </div>
+                    <input type="hidden" id="field-logo-url" name="logo_url" />
+                </div>
+
+                <div class="pt-6 border-t border-[#F5EFEB] flex flex-col gap-4">
+                    <button type="submit" id="save-partner-btn" class="bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl disabled:opacity-50">
+                        Guardar Marca
+                    </button>
+                    <button type="button" id="delete-confirm-btn" class="hidden bg-red-50 text-red-500 py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-red-500 hover:text-white transition-all border border-red-100">
+                        Eliminar Socio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  import { getPartners } from '../../utils/data';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const listContainer = document.getElementById('partners-list');
+    const spinner = document.getElementById('loading-spinner');
+    const modal = document.getElementById('partner-modal');
+    const partnerForm = document.getElementById('partner-form') as HTMLFormElement;
+    const addBtn = document.getElementById('add-partner-btn');
+    const closeBtn = document.getElementById('close-modal');
+    const logoInput = document.getElementById('field-logo') as HTMLInputElement;
+    const logoPreview = document.getElementById('logo-preview');
+    const logoUrlInput = document.getElementById('field-logo-url') as HTMLInputElement;
+    const deleteBtn = document.getElementById('delete-confirm-btn');
+
+    async function loadPartners() {
+        try {
+            if (spinner) spinner.classList.remove('hidden');
+            if (listContainer) listContainer.classList.add('opacity-0');
+            
+            const partners = await getPartners();
+            if (!listContainer) return;
+
+            listContainer.innerHTML = partners.map(p => `
+                <div class="bg-white p-6 rounded-[32px] shadow-lg flex flex-col items-center gap-4 group hover:shadow-2xl transition-all border border-transparent hover:border-[#567C8D]/20 edit-btn cursor-pointer" 
+                     data-partner="${btoa(unescape(encodeURIComponent(JSON.stringify(p))))}">
+                    <div class="w-full h-20 flex items-center justify-center p-2">
+                        <img src="${p.logo}" alt="${p.name}" class="max-w-full max-h-full object-contain grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
+                    </div>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-[#567C8D] text-center">${p.name}</p>
+                </div>
+            `).join('');
+
+            if (partners.length === 0) {
+                listContainer.innerHTML = '<div class="col-span-full py-20 text-center"><p class="text-[#567C8D] font-bold uppercase tracking-widest text-xs">Aún no has añadido socios.</p></div>';
+            }
+
+            listContainer.classList.remove('opacity-0');
+            if (spinner) spinner.classList.add('hidden');
+
+            // Attach edit events
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const encodedData = (btn as HTMLElement).dataset.partner || '';
+                    const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+                    openModal(data);
+                });
+            });
+        } catch (e) {
+            console.error("Error loading partners", e);
+        }
+    }
+
+    function openModal(partner: any = null) {
+        partnerForm.reset();
+        
+        if (partner) {
+            document.getElementById('modal-title')!.innerText = 'Editar Marca';
+            (document.getElementById('partner-id') as HTMLInputElement).value = partner.id;
+            (document.getElementById('field-name') as HTMLInputElement).value = partner.name;
+            logoUrlInput.value = partner.logo;
+            if (logoPreview) logoPreview.innerHTML = `<img src="${partner.logo}" class="max-w-full max-h-full object-contain p-4" />`;
+            if (deleteBtn) deleteBtn.classList.remove('hidden');
+        } else {
+            document.getElementById('modal-title')!.innerText = 'Nueva Marca';
+            (document.getElementById('partner-id') as HTMLInputElement).value = '';
+            if (logoPreview) logoPreview.innerHTML = '<span class="text-[20px]">🏢</span>';
+            if (deleteBtn) deleteBtn.classList.add('hidden');
+        }
+
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+    }
+
+    function closeModal() {
+        modal?.classList.add('hidden');
+        modal?.classList.remove('flex');
+    }
+
+    addBtn?.addEventListener('click', () => openModal());
+    closeBtn?.addEventListener('click', closeModal);
+
+    logoInput?.addEventListener('change', async () => {
+        const file = logoInput.files?.[0];
+        if (!file) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `partner-${Date.now()}.${fileExt}`;
+        const filePath = `partners/${fileName}`;
+
+        try {
+            const { error } = await supabase.storage.from('assets').upload(filePath, file);
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(filePath);
+            logoUrlInput.value = publicUrl;
+            if (logoPreview) logoPreview.innerHTML = `<img src="${publicUrl}" class="max-w-full max-h-full object-contain p-4" />`;
+        } catch (err: any) {
+            alert("Error al subir logo: " + err.message);
+        }
+    });
+
+    partnerForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('save-partner-btn') as HTMLButtonElement;
+        saveBtn.disabled = true;
+
+        const formData = new FormData(partnerForm);
+        const payload = {
+            name: formData.get('name'),
+            logo_url: formData.get('logo_url')
+        };
+
+        const id = formData.get('id');
+
+        try {
+            let error;
+            if (id) {
+                const { error: err } = await supabase.from('partners').update(payload).eq('id', id);
+                error = err;
+            } else {
+                const { error: err } = await supabase.from('partners').insert([payload]);
+                error = err;
+            }
+
+            if (error) throw error;
+            
+            closeModal();
+            loadPartners();
+        } catch (err: any) {
+            alert("Error al guardar: " + err.message);
+        } finally {
+            saveBtn.disabled = false;
+        }
+    });
+
+    deleteBtn?.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este socio?')) return;
+        
+        const id = (document.getElementById('partner-id') as HTMLInputElement).value;
+        if (!id) return;
+
+        try {
+            const { error } = await supabase.from('partners').delete().eq('id', id);
+            if (error) throw error;
+            closeModal();
+            loadPartners();
+        } catch (err: any) {
+            alert("Error al eliminar: " + err.message);
+        }
+    });
+
+    loadPartners();
+  }
+</script>

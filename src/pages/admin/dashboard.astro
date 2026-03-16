@@ -1,0 +1,201 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Dashboard Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] flex flex-col pt-24 pb-12 px-4 md:px-12 lg:px-20">
+    <div class="max-w-7xl mx-auto w-full">
+      
+      <div class="flex flex-row justify-between items-center mb-8">
+        <div>
+          <h1 class="font-display text-3xl md:text-5xl font-bold text-[#1C2B3A] mb-1">Dashboard</h1>
+          <p class="text-[#567C8D] font-bold uppercase tracking-[0.3em] text-[9px]">Gestión Real-Time • Anais Content</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/" target="_blank" class="hidden md:flex bg-white text-[#1C2B3A] px-4 py-2 rounded-xl font-bold uppercase tracking-widest text-[9px] hover:bg-[#C8D9E6] transition-all border border-[#C8D9E6]/30">
+            Sitio Web ↗
+          </a>
+          <button id="logout-btn" class="text-[9px] font-black uppercase tracking-widest text-red-500/60 hover:text-red-500 transition-colors">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+      
+      <!-- Analytics Overview (More Compact) -->
+      <div id="analytics-section" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <!-- Total Visits -->
+          <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
+              <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Visitas</span>
+              <div class="flex items-center justify-between">
+                  <h3 id="stat-visits" class="text-2xl font-bold text-[#1C2B3A]">---</h3>
+                  <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  </div>
+              </div>
+          </div>
+          <!-- Total Leads -->
+          <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
+              <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Leads</span>
+              <div class="flex items-center justify-between">
+                  <h3 id="stat-leads" class="text-2xl font-bold text-[#1C2B3A]">---</h3>
+                  <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  </div>
+              </div>
+          </div>
+          <!-- Conversion -->
+          <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
+              <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Conversión</span>
+              <div class="flex items-center justify-between">
+                  <h3 id="stat-conv" class="text-2xl font-bold text-[#1C2B3A]">0%</h3>
+                  <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                  </div>
+              </div>
+          </div>
+          <!-- Content Items -->
+          <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
+              <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Publicaciones</span>
+              <div class="flex items-center justify-between">
+                  <h3 id="stat-content" class="text-2xl font-bold text-[#1C2B3A]">---</h3>
+                  <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <!-- Hero -->
+        <a href="/admin/hero" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Portada (Hero)</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Título y foto de inicio.</p>
+        </a>
+
+        <!-- Site Profile -->
+        <a href="/admin/site" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Identidad & SEO</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Brand, logo y Google.</p>
+        </a>
+
+        <!-- About Me -->
+        <a href="/admin/about" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Sobre Mí</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Biografía y galería.</p>
+        </a>
+
+        <!-- Portfolio -->
+        <a href="/admin/portfolio" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Proyectos</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Portafolio inmobiliario.</p>
+        </a>
+
+        <!-- Services -->
+        <a href="/admin/services" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Servicios</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Especialidades y tags.</p>
+        </a>
+
+        <!-- Partners -->
+        <a href="/admin/partners" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Partners</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Logos de marcas.</p>
+        </a>
+
+        <!-- Testimonials -->
+        <a href="/admin/testimonios" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Testimonios</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Reseñas de clientes.</p>
+        </a>
+
+        <!-- Messages -->
+        <a href="/admin/messages" class="group bg-[#1C2B3A] p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12"></div>
+          <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-white mb-2 leading-tight">Buzón</h2>
+          <p class="text-[10px] text-white/50 leading-relaxed line-clamp-2">Buzón de leads.</p>
+        </a>
+
+        <!-- Security -->
+        <a href="/admin/security" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
+          <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Privacidad</h2>
+          <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Cambiar contraseña.</p>
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  // Simple Client-Side Guard
+  if (sessionStorage.getItem('admin_access') !== 'true') {
+    window.location.href = '/admin';
+  }
+  
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    sessionStorage.removeItem('admin_access');
+    window.location.href = '/admin';
+  });
+
+  async function fetchStats() {
+      try {
+          const [
+              { count: visits },
+              { count: leads },
+              { count: portfolio },
+              { count: services }
+          ] = await Promise.all([
+              supabase.from('analytics').select('*', { count: 'exact', head: true }),
+              supabase.from('messages').select('*', { count: 'exact', head: true }),
+              supabase.from('portfolio').select('*', { count: 'exact', head: true }),
+              supabase.from('services').select('*', { count: 'exact', head: true })
+          ]);
+
+          const totalVisits = visits || 0;
+          const totalLeads = leads || 0;
+          const totalItems = (portfolio || 0) + (services || 0);
+
+          document.getElementById('stat-visits').innerText = totalVisits.toLocaleString();
+          document.getElementById('stat-leads').innerText = totalLeads.toLocaleString();
+          document.getElementById('stat-content').innerText = totalItems.toLocaleString();
+
+          if (totalVisits > 0) {
+              const conv = ((totalLeads / totalVisits) * 100).toFixed(1);
+              document.getElementById('stat-conv').innerText = `${conv}%`;
+          }
+      } catch (e) {
+          console.error("Error loading stats", e);
+      }
+  }
+
+  fetchStats();
+</script>
