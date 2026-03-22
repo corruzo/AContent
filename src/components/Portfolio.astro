@@ -154,11 +154,19 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
   </button>
 
   <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="modal-content-wrapper">
-    <!-- Spinner -->
-    <div id="modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
-       <div class="flex flex-col items-center gap-4">
-          <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-          <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white/50">Cargando Galería</span>
+    <!-- Improved Brand Spinner -->
+    <div id="modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 invisible transition-all duration-300 z-[1050] pointer-events-none">
+       <div class="flex flex-col items-center gap-6">
+          <div class="relative">
+            <div class="w-16 h-16 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
+            </div>
+          </div>
+          <div class="text-center">
+            <span class="block text-[11px] font-black uppercase tracking-[0.5em] text-white animate-pulse mb-1">Anais Content</span>
+            <span class="text-[8px] font-bold uppercase tracking-[0.3em] text-white/40">Cargando Galería...</span>
+          </div>
        </div>
     </div>
     <!-- inline style handles transitions instead of Tailwind classes to avoid class-list conflicts -->
@@ -189,7 +197,8 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     
     // Show spinner
     const spinner = getEl('modal-spinner');
-    if (spinner) spinner.style.opacity = '1';
+    if (spinner) spinner.classList.remove('opacity-0', 'invisible');
+
 
     const counter = getEl('gallery-counter');
     const titleEl = getEl('gallery-title');
@@ -202,10 +211,11 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
       const show = () => {
         img.style.opacity   = '1';
         img.style.transform = 'translateX(0)';
-        if (spinner) spinner.style.opacity = '0';
+        if (spinner) spinner.classList.add('opacity-0', 'invisible');
       };
-      img.onload = show;
-      img.src    = gallery[idx];
+      img.onload  = show;
+      img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); }; // Hide spinner on error
+      img.src     = gallery[idx];
       // Already cached? complete fires immediately before onload
       if (img.complete && img.naturalWidth) show();
     }, 140);
