@@ -195,30 +195,32 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     img.style.opacity   = '0';
     img.style.transform = 'translateX(12px)';
     
-    // Show spinner
-    const spinner = getEl('modal-spinner');
-    if (spinner) spinner.classList.remove('opacity-0', 'invisible');
-
+    // Preload next
+    const nextIdx = (idx + 1) % gallery.length;
+    new Image().src = gallery[nextIdx];
 
     const counter = getEl('gallery-counter');
     const titleEl = getEl('gallery-title');
     if (counter) counter.textContent = `${idx + 1} / ${gallery.length}`;
     if (titleEl) titleEl.textContent  = title;
 
-    setTimeout(() => {
-      // Setting src='' forces onload to fire even for cached URLs
-      img.src = '';
-      const show = () => {
-        img.style.opacity   = '1';
-        img.style.transform = 'translateX(0)';
-        if (spinner) spinner.classList.add('opacity-0', 'invisible');
-      };
-      img.onload  = show;
-      img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); }; // Hide spinner on error
-      img.src     = gallery[idx];
-      // Already cached? complete fires immediately before onload
-      if (img.complete && img.naturalWidth) show();
-    }, 140);
+    // Show spinner ONLY if not cached
+    const spinner = getEl('modal-spinner');
+    const show = () => {
+      img.style.opacity   = '1';
+      img.style.transform = 'translateX(0)';
+      if (spinner) spinner.classList.add('opacity-0', 'invisible');
+    };
+
+    img.onload  = show;
+    img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); };
+    
+    img.src = gallery[idx];
+    if (img.complete && img.naturalWidth) {
+      show();
+    } else {
+      if (spinner) spinner.classList.remove('opacity-0', 'invisible');
+    }
   };
 
   const openModal = (galleryJson, projectTitle) => {

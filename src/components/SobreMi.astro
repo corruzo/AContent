@@ -163,29 +163,31 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
     if (!lb || !img) return;
 
     // Reset first so transition fires even for the same src
+    // Fade out state
     img.style.opacity   = '0';
     img.style.transform = 'translateY(12px)';
-    img.src = '';
-    img.onload = null;
 
     lb.classList.remove('opacity-0', 'pointer-events-none', 'invisible');
     document.body.style.overflow = 'hidden';
 
-    // Show spinner
+    // Show spinner ONLY if not cached
     const spinner = document.getElementById('about-modal-spinner');
-    if (spinner) spinner.classList.remove('opacity-0', 'invisible');
-
-
-
+    
     const show = () => {
       img.style.opacity   = '1';
       img.style.transform = 'translateY(0)';
       if (spinner) spinner.classList.add('opacity-0', 'invisible');
     };
+
     img.onload  = show;
-    img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); }; // Hide spinner on error
-    img.src     = src;
-    if (img.complete && img.naturalWidth) show();
+    img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); };
+    
+    img.src = src;
+    if (img.complete && img.naturalWidth) {
+      show();
+    } else {
+      if (spinner) spinner.classList.remove('opacity-0', 'invisible');
+    }
   };
 
   const closeLb = () => {
