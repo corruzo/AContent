@@ -113,7 +113,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
 
           <div class="absolute inset-0 bg-gradient-to-t from-[#1C2B3A] via-[#1C2B3A]/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
           
-          <div class="absolute inset-0 p-8 lg:p-12 flex flex-col justify-end transform transition-transform duration-700">
+          <div class="absolute inset-0 p-8 lg:p-12 flex flex-col justify-end transform transition-transform duration-700 pointer-events-none">
             <div class="translate-y-0 lg:translate-y-4 lg:group-hover:translate-y-0 transition-transform duration-500">
               <span class="inline-block text-[9px] font-black uppercase tracking-[0.4em] text-[#C8D9E6] mb-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity delay-100">Click para ver galería</span>
               <h3 class="font-display text-2xl lg:text-4xl font-bold text-white leading-tight mb-4">{p.title}</h3>
@@ -122,6 +122,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
               </div>
             </div>
           </div>
+          <div class="absolute inset-0 z-30 cursor-pointer" aria-hidden="true"></div>
         </div>
       ))}
     </div>
@@ -130,7 +131,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
 </section>
 
 <!-- ── LIGHTBOX MODAL ── -->
-<div id="portfolio-modal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
+<div id="portfolio-modal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 invisible pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
   
   <div class="absolute inset-0 bg-[#1C2B3A]/95 backdrop-blur-2xl"></div>
 
@@ -205,7 +206,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
       if (!gallery.length) return;
       const modal = getEl('portfolio-modal');
       if (!modal) return;
-      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.remove('opacity-0', 'pointer-events-none', 'invisible');
       document.body.style.overflow = 'hidden';
       setImage(0);
     } catch (e) { console.error('Gallery open error', e); }
@@ -215,7 +216,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     const modal = getEl('portfolio-modal');
     const img   = getEl('modal-image');
     if (!modal) return;
-    modal.classList.add('opacity-0', 'pointer-events-none');
+    modal.classList.add('opacity-0', 'pointer-events-none', 'invisible');
     document.body.style.overflow = '';
     // Reset image so the NEXT open always animates cleanly
     if (img) {

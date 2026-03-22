@@ -83,7 +83,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { getTestimonials } from '../../utils/data';
+  import { getTestimonials, safeEncode, safeDecode } from '../../utils/data';
 
   if (sessionStorage.getItem('admin_access') !== 'true') {
     window.location.href = '/admin';
@@ -98,8 +98,8 @@ import Layout from '../../layouts/Layout.astro';
     const deleteBtn      = document.getElementById('delete-confirm-btn');
 
     // ── unicode-safe encode/decode ─────────────────────────────────────────
-    const enc = (obj: unknown) => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-    const dec = (s: string)    => JSON.parse(decodeURIComponent(escape(atob(s))));
+    // (Consumido desde utils para consistencia)
+
 
     async function loadTestimonials() {
         try {
@@ -114,7 +114,7 @@ import Layout from '../../layouts/Layout.astro';
                 ? '<div class="py-20 text-center"><p class="text-[#567C8D] font-bold uppercase tracking-widest text-xs">Aún no hay testimonios cargados.</p></div>'
                 : testimonials.map(t => `
                     <div class="bg-white p-8 rounded-[32px] shadow-lg flex flex-col gap-6 group hover:shadow-2xl transition-all border border-transparent hover:border-[#567C8D]/20 edit-btn cursor-pointer"
-                         data-t="${enc(t)}">
+                         data-t="${safeEncode(t)}">
                         <p class="text-lg text-[#1C2B3A] italic font-medium">"${t.text}"</p>
                         <div class="flex items-center gap-4 pt-4 border-t border-[#F5EFEB]">
                             <div class="w-10 h-10 rounded-full bg-[#1C2B3A] flex items-center justify-center text-xs font-bold text-white uppercase">${t.avatar || t.author.charAt(0)}</div>
@@ -131,7 +131,7 @@ import Layout from '../../layouts/Layout.astro';
 
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const data = dec((btn as HTMLElement).dataset.t || '{}');
+                    const data = safeDecode((btn as HTMLElement).dataset.t || '{}');
                     openModal(data as any);
                 });
             });

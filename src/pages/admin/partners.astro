@@ -75,7 +75,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { getPartners } from '../../utils/data';
+  import { getPartners, safeEncode, safeDecode } from '../../utils/data';
 
   const checkAuth = () => {
     if (sessionStorage.getItem('admin_access') !== 'true') {
@@ -107,7 +107,7 @@ import Layout from '../../layouts/Layout.astro';
 
             listContainer.innerHTML = partners.map(p => `
                 <div class="bg-white p-6 rounded-[32px] shadow-lg flex flex-col items-center gap-4 group hover:shadow-2xl transition-all border border-transparent hover:border-[#567C8D]/20 edit-btn cursor-pointer" 
-                     data-partner="${btoa(unescape(encodeURIComponent(JSON.stringify(p))))}">
+                     data-partner="${safeEncode(p)}">
                     <div class="w-full h-20 flex items-center justify-center p-2">
                         <img src="${p.logo}" alt="${p.name}" class="max-w-full max-h-full object-contain grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
                     </div>
@@ -126,7 +126,7 @@ import Layout from '../../layouts/Layout.astro';
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const encodedData = (btn as HTMLElement).dataset.partner || '';
-                    const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+                    const data = safeDecode(encodedData) as any;
                     openModal(data);
                 });
             });

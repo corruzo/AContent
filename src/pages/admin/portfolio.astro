@@ -91,7 +91,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
   import { supabase } from '../../lib/supabase';
-  import { getProjects } from '../../utils/data';
+  import { getProjects, safeEncode, safeDecode } from '../../utils/data';
 
   const checkAuth = () => {
     if (sessionStorage.getItem('admin_access') !== 'true') {
@@ -135,7 +135,7 @@ import Layout from '../../layouts/Layout.astro';
                     </div>
                     <div class="flex gap-4">
                         <button class="edit-btn p-4 rounded-xl bg-[#F5EFEB] text-[#1C2B3A] hover:bg-[#1C2B3A] hover:text-white transition-all active:scale-90" 
-                                data-project="${btoa(unescape(encodeURIComponent(JSON.stringify(p))))}" title="Editar">
+                                data-project="${safeEncode(p)}" title="Editar">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </button>
                     </div>
@@ -153,7 +153,7 @@ import Layout from '../../layouts/Layout.astro';
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const encodedData = (btn as HTMLButtonElement).dataset.project || '';
-                    const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+                    const data = safeDecode(encodedData) as any;
                     openModal(data);
                 });
             });
