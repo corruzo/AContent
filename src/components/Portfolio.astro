@@ -154,6 +154,13 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
   </button>
 
   <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="modal-content-wrapper">
+    <!-- Spinner -->
+    <div id="modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
+       <div class="flex flex-col items-center gap-4">
+          <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+          <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white/50">Cargando Galería</span>
+       </div>
+    </div>
     <!-- inline style handles transitions instead of Tailwind classes to avoid class-list conflicts -->
     <img id="modal-image" src="" alt="Vista previa de galería"
       style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateX(12px);box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;pointer-events:auto;" />
@@ -179,6 +186,10 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     // Fade out
     img.style.opacity   = '0';
     img.style.transform = 'translateX(12px)';
+    
+    // Show spinner
+    const spinner = getEl('modal-spinner');
+    if (spinner) spinner.style.opacity = '1';
 
     const counter = getEl('gallery-counter');
     const titleEl = getEl('gallery-title');
@@ -191,6 +202,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
       const show = () => {
         img.style.opacity   = '1';
         img.style.transform = 'translateX(0)';
+        if (spinner) spinner.style.opacity = '0';
       };
       img.onload = show;
       img.src    = gallery[idx];

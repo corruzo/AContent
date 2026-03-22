@@ -101,40 +101,43 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
   </button>
 
   <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="about-lb-content">
+    <!-- Spinner -->
+    <div id="about-modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
+       <div class="flex flex-col items-center gap-4">
+          <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+          <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white/50">Cargando Imagen</span>
+       </div>
+    </div>
     <img id="lightbox-img" src="" alt="Vista previa ampliada"
       style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateY(12px);pointer-events:auto;" />
   </div>
 </div>
 
-<style>
-  /* ── Desktop: CSS marquee animation ── */
-  @media (min-width: 768px) {
-    @keyframes marquee-slow {
-      0%   { transform: translate3d(0, 0, 0); }
-      100% { transform: translate3d(-33.33%, 0, 0); }
-    }
-    .slider-track {
-      animation: marquee-slow 60s linear infinite;
-      will-change: transform;
-    }
-    .slider-track:hover {
-      animation-play-state: paused;
-    }
+  /* ── Dynamic Marquee Animation ── */
+  @keyframes marquee-slow {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-33.33%, 0, 0); }
   }
 
-  /* ── Mobile: no animation — let the user scroll naturally ── */
-  @media (max-width: 767px) {
-    .slider-track {
-      animation: none !important;
-    }
-    #slider-container {
-      -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x mandatory;
-    }
-    .about-photo-card,
-    #photo-slider > div {
-      scroll-snap-align: start;
-    }
+  .slider-track {
+    animation: marquee-slow 80s linear infinite;
+    will-change: transform;
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* gap-4 */
+    width: max-content;
+  }
+
+  /* Pause on hover (Desktop) or touch-hold (Mobile) */
+  .slider-track:hover,
+  .slider-track:active {
+    animation-play-state: paused;
+  }
+
+  /* ── Scroll handling ── */
+  #slider-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
   }
 
   .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -160,9 +163,15 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
     lb.classList.remove('opacity-0', 'pointer-events-none', 'invisible');
     document.body.style.overflow = 'hidden';
 
+    // Show spinner
+    const spinner = document.getElementById('about-modal-spinner');
+    if (spinner) spinner.style.opacity = '1';
+
+
     const show = () => {
       img.style.opacity   = '1';
       img.style.transform = 'translateY(0)';
+      if (spinner) spinner.style.opacity = '0';
     };
     img.onload = show;
     img.src    = src;
