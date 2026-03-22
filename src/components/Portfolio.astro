@@ -31,13 +31,11 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     if (!imgPath) return null;
     if (imgPath.startsWith('http')) return imgPath;
     
-    // Local fallback
     const nPath = normalizeAssetPath(imgPath);
     const key = Object.keys(portfolioAssets).find(k => k.toLowerCase() === nPath.toLowerCase());
     return key ? portfolioAssets[key].default.src : null;
   }).filter(Boolean);
 
-  // Determine layout
   let isWide = p.wide ?? false;
   if (asset && typeof asset === 'object' && asset.width) {
     if (p.wide === undefined || p.wide === null) {
@@ -45,20 +43,19 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     }
   }
 
-  // Plan B: Default values if strings are missing
-  const projectTitle = p.title || 'Proyecto Sin Nombre';
+  const projectTitle    = p.title    || 'Proyecto Sin Nombre';
   const projectLocation = p.location || 'Consultar Ubicación';
-  const projectColor = p.color || '#1C2B3A';
+  const projectColor    = p.color    || '#1C2B3A';
 
   return {
     ...p,
-    title: projectTitle,
+    title:    projectTitle,
     location: projectLocation,
-    color: projectColor,
-    image: asset || p.image, // Use remote URL if asset is null
+    color:    projectColor,
+    image:    asset || p.image,
     isWide,
     mediaSrc: mainOptimizedSrc,
-    gallery: [mainOptimizedSrc, ...galleryUrls].filter((v, i, a) => v && a.indexOf(v) === i) // Unique images
+    gallery:  [mainOptimizedSrc, ...galleryUrls].filter((v, i, a) => v && a.indexOf(v) === i)
   };
 }));
 ---
@@ -79,7 +76,7 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
       </div>
     </div>
 
-    <!-- ── GRID: Asymmetric Abstract Mosaic ── -->
+    <!-- ── GRID ── -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
       {processedProjects.map((p, i) => (
         <div 
@@ -93,7 +90,6 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
                   ${p.isWide ? 'md:col-span-8 h-[400px] lg:h-[550px]' : 'md:col-span-4 h-[400px] lg:h-[550px]'}`}
           style={`background-color: ${p.color}`}
         >
-          {/* Main static image wrapped in skeleton */}
           <div class={`absolute inset-0 w-full h-full overflow-hidden ${!p.image ? 'skeleton' : ''}`}>
             {p.image && (
               typeof p.image === 'string' ? (
@@ -115,10 +111,8 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
             )}
           </div>
 
-          {/* Gradient Overlay */}
           <div class="absolute inset-0 bg-gradient-to-t from-[#1C2B3A] via-[#1C2B3A]/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700"></div>
           
-          {/* Content Overlay */}
           <div class="absolute inset-0 p-8 lg:p-12 flex flex-col justify-end transform transition-transform duration-700">
             <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
               <span class="inline-block text-[9px] font-black uppercase tracking-[0.4em] text-[#C8D9E6] mb-3 opacity-0 group-hover:opacity-100 transition-opacity delay-100">Click para ver galería</span>
@@ -135,25 +129,22 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
   </div>
 </section>
 
-<!-- Lightbox Modal (Gallery Style) -->
+<!-- ── LIGHTBOX MODAL ── -->
 <div id="portfolio-modal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
   
   <div class="absolute inset-0 bg-[#1C2B3A]/95 backdrop-blur-2xl"></div>
 
-  <!-- Counter & Info -->
   <div class="absolute top-6 left-6 md:top-10 md:left-20 z-[1020] text-white">
-    <span id="gallery-counter" class="text-[#C8D9E6] font-display text-2xl md:text-4xl font-black italic block mb-1 md:mb-2 text-shadow-lg">1 / 5</span>
+    <span id="gallery-counter" class="text-[#C8D9E6] font-display text-2xl md:text-4xl font-black italic block mb-1 md:mb-2 text-shadow-lg">1 / 1</span>
     <h4 id="gallery-title" class="text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] opacity-80">PROYECTO</h4>
   </div>
 
-  <!-- Close Btn -->
   <button id="modal-close" aria-label="Cerrar galería" class="absolute top-6 right-6 md:top-10 md:right-20 text-white hover:text-[#C8D9E6] transition-all bg-white/10 hover:bg-white/20 rounded-full p-4 md:p-5 z-[1030] backdrop-blur-md border border-white/10 active:scale-90 shadow-2xl">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
     </svg>
   </button>
 
-  <!-- Navigation Arrows -->
   <button id="prev-btn" class="absolute left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/50 hover:text-white hover:scale-110 transition-all z-[1020] p-4 group">
     <svg class="w-8 h-8 md:w-12 md:h-12 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
   </button>
@@ -161,110 +152,119 @@ const processedProjects = await Promise.all(rawProjects.map(async (p) => {
     <svg class="w-8 h-8 md:w-12 md:h-12 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
   </button>
 
-  <!-- Image Container -->
   <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="modal-content-wrapper">
-    <img id="modal-image" src="" alt="Vista previa de galería" class="max-w-full max-h-[85vh] w-auto h-auto object-contain transition-all duration-500 ease-out opacity-0 translate-x-4 shadow-2xl rounded-sm pointer-events-auto" />
+    <!-- inline style handles transitions instead of Tailwind classes to avoid class-list conflicts -->
+    <img id="modal-image" src="" alt="Vista previa de galería"
+      style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateX(12px);box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;pointer-events:auto;" />
   </div>
 </div>
 
 <script is:inline>
-  (function() {
-    const initPortfolio = () => {
-      const modal = document.getElementById('portfolio-modal');
-      const modalImg = document.getElementById('modal-image');
-      const closeBtn = document.getElementById('modal-close');
-      const prevBtn = document.getElementById('prev-btn');
-      const nextBtn = document.getElementById('next-btn');
-      const counter = document.getElementById('gallery-counter');
-      const titleEl = document.getElementById('gallery-title');
-      const items = document.querySelectorAll('.portfolio-item');
+(function () {
+  // ── Shared state (module-level so re-inits don't reset it) ──
+  let gallery   = [];
+  let idx       = 0;
+  let title     = '';
+  let keyFn     = null;   // reference to keyboard handler so we can replace it safely
 
-      let currentGallery = [];
-      let currentIndex = 0;
-      let currentTitle = "";
+  // ── Helpers ──────────────────────────────────────────────────
+  const getEl = (id) => document.getElementById(id);
 
-      if (!modal || !items.length) return;
+  const setImage = (newIdx) => {
+    const img = getEl('modal-image');
+    if (!img || !gallery.length) return;
+    idx = (newIdx + gallery.length) % gallery.length;
 
-      const updateGallery = (index) => {
-        if (!currentGallery.length) return;
-        currentIndex = (index + currentGallery.length) % currentGallery.length;
-        const src = currentGallery[currentIndex];
-        
-        modalImg.classList.add('opacity-0', 'translate-x-4');
-        
-        setTimeout(() => {
-          modalImg.src = src;
-          if (counter) counter.textContent = `${currentIndex + 1} / ${currentGallery.length}`;
-          if (titleEl) titleEl.textContent = currentTitle;
-          
-          modalImg.onload = () => {
-            modalImg.classList.remove('opacity-0', 'translate-x-4');
-          };
-          if (modalImg.complete) {
-            modalImg.classList.remove('opacity-0', 'translate-x-4');
-          }
-        }, 150);
+    // Fade out
+    img.style.opacity   = '0';
+    img.style.transform = 'translateX(12px)';
+
+    const counter = getEl('gallery-counter');
+    const titleEl = getEl('gallery-title');
+    if (counter) counter.textContent = `${idx + 1} / ${gallery.length}`;
+    if (titleEl) titleEl.textContent  = title;
+
+    setTimeout(() => {
+      // Setting src='' forces onload to fire even for cached URLs
+      img.src = '';
+      const show = () => {
+        img.style.opacity   = '1';
+        img.style.transform = 'translateX(0)';
       };
+      img.onload = show;
+      img.src    = gallery[idx];
+      // Already cached? complete fires immediately before onload
+      if (img.complete && img.naturalWidth) show();
+    }, 140);
+  };
 
-      const openGallery = (galleryJson, title) => {
-        try {
-          currentGallery = JSON.parse(galleryJson);
-          currentTitle = title;
-          currentIndex = 0;
-          if (!currentGallery || !currentGallery.length) return;
+  const openModal = (galleryJson, projectTitle) => {
+    try {
+      gallery = JSON.parse(galleryJson || '[]');
+      title   = projectTitle || '';
+      if (!gallery.length) return;
+      const modal = getEl('portfolio-modal');
+      if (!modal) return;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      document.body.style.overflow = 'hidden';
+      setImage(0);
+    } catch (e) { console.error('Gallery open error', e); }
+  };
 
-          modal.classList.remove('opacity-0', 'pointer-events-none');
-          document.body.style.overflow = 'hidden';
-          updateGallery(0);
-        } catch(e) { console.error("Error opening gallery", e); }
-      };
+  const closeModal = () => {
+    const modal = getEl('portfolio-modal');
+    const img   = getEl('modal-image');
+    if (!modal) return;
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    document.body.style.overflow = '';
+    // Reset image so the NEXT open always animates cleanly
+    if (img) {
+      img.style.opacity   = '0';
+      img.style.transform = 'translateX(12px)';
+      img.src = '';
+      img.onload = null;
+    }
+  };
 
-      const closeGallery = () => {
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        document.body.style.overflow = '';
-      };
+  // ── Wire up DOM (safe to call multiple times) ─────────────────
+  const init = () => {
+    const modal    = getEl('portfolio-modal');
+    const closeBtn = getEl('modal-close');
+    const prevBtn  = getEl('prev-btn');
+    const nextBtn  = getEl('next-btn');
+    if (!modal) return;
 
-      // Use traditional event listener to avoid issues with inline scripts
-      items.forEach(item => {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          openGallery(item.getAttribute('data-gallery'), item.getAttribute('data-title'));
-        });
-      });
+    // onclick assignment replaces any previous handler — no duplicates
+    document.querySelectorAll('.portfolio-item').forEach(item => {
+      item.onclick = () =>
+        openModal(item.getAttribute('data-gallery'), item.getAttribute('data-title'));
+    });
 
-      if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); closeGallery(); };
-      if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); updateGallery(currentIndex + 1); };
-      if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); updateGallery(currentIndex - 1); };
+    if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); closeModal(); };
+    if (prevBtn)  prevBtn.onclick  = (e) => { e.stopPropagation(); setImage(idx - 1); };
+    if (nextBtn)  nextBtn.onclick  = (e) => { e.stopPropagation(); setImage(idx + 1); };
 
-      modal.onclick = (e) => {
-        if (e.target === modal || e.target.id === 'modal-content-wrapper') {
-          closeGallery();
-        }
-      };
-
-      const handleKey = (e) => {
-        if (modal.classList.contains('opacity-0')) return;
-        if (e.key === 'Escape') closeGallery();
-        if (e.key === 'ArrowRight') updateGallery(currentIndex + 1);
-        if (e.key === 'ArrowLeft') updateGallery(currentIndex - 1);
-      };
-      window.removeEventListener('keydown', handleKey);
-      window.addEventListener('keydown', handleKey);
+    modal.onclick = (e) => {
+      if (e.target === modal || e.target.id === 'modal-content-wrapper') closeModal();
     };
 
-    // Run on init and on Astro page load
-    initPortfolio();
-    document.addEventListener('astro:page-load', initPortfolio);
-    document.addEventListener('astro:after-swap', initPortfolio);
-  })();
+    // Replace keyboard handler cleanly
+    if (keyFn) window.removeEventListener('keydown', keyFn);
+    keyFn = (e) => {
+      if (modal.classList.contains('pointer-events-none')) return;
+      if (e.key === 'Escape')     closeModal();
+      if (e.key === 'ArrowRight') setImage(idx + 1);
+      if (e.key === 'ArrowLeft')  setImage(idx - 1);
+    };
+    window.addEventListener('keydown', keyFn);
+  };
+
+  init();
+  document.addEventListener('astro:page-load',  init);
+  document.addEventListener('astro:after-swap', init);
+})();
 </script>
 
 <style>
-  #modal-image {
-    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.9));
-    will-change: transform, opacity;
-  }
-  .text-shadow-lg {
-    text-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  }
+  .text-shadow-lg { text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 </style>

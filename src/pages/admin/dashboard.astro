@@ -21,9 +21,8 @@ import Layout from '../../layouts/Layout.astro';
         </div>
       </div>
       
-      <!-- Analytics Overview (More Compact) -->
+      <!-- Analytics Overview -->
       <div id="analytics-section" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <!-- Total Visits -->
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
               <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Visitas</span>
               <div class="flex items-center justify-between">
@@ -33,7 +32,6 @@ import Layout from '../../layouts/Layout.astro';
                   </div>
               </div>
           </div>
-          <!-- Total Leads -->
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
               <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Leads</span>
               <div class="flex items-center justify-between">
@@ -43,7 +41,6 @@ import Layout from '../../layouts/Layout.astro';
                   </div>
               </div>
           </div>
-          <!-- Conversion -->
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
               <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Conversión</span>
               <div class="flex items-center justify-between">
@@ -53,7 +50,6 @@ import Layout from '../../layouts/Layout.astro';
                   </div>
               </div>
           </div>
-          <!-- Content Items -->
           <div class="bg-white p-6 rounded-[32px] shadow-sm border border-[#567C8D]/5 group hover:border-[#567C8D]/20 transition-all">
               <span class="text-[8px] font-black uppercase tracking-widest text-[#567C8D]/50 mb-2 block">Publicaciones</span>
               <div class="flex items-center justify-between">
@@ -66,7 +62,6 @@ import Layout from '../../layouts/Layout.astro';
       </div>
 
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <!-- Hero -->
         <a href="/admin/hero" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -74,8 +69,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Portada (Hero)</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Título y foto de inicio.</p>
         </a>
-
-        <!-- Site Profile -->
         <a href="/admin/site" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -83,8 +76,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Identidad & SEO</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Brand, logo y Google.</p>
         </a>
-
-        <!-- About Me -->
         <a href="/admin/about" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -92,8 +83,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Sobre Mí</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Biografía y galería.</p>
         </a>
-
-        <!-- Portfolio -->
         <a href="/admin/portfolio" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -101,8 +90,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Proyectos</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Portafolio inmobiliario.</p>
         </a>
-
-        <!-- Services -->
         <a href="/admin/services" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -110,8 +97,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Servicios</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Especialidades y tags.</p>
         </a>
-
-        <!-- Partners -->
         <a href="/admin/partners" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -119,8 +104,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Partners</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Logos de marcas.</p>
         </a>
-
-        <!-- Testimonials -->
         <a href="/admin/testimonios" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
@@ -128,8 +111,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-[#1C2B3A] mb-2 leading-tight">Testimonios</h2>
           <p class="text-[10px] text-[#567C8D] leading-relaxed line-clamp-2">Reseñas de clientes.</p>
         </a>
-
-        <!-- Messages -->
         <a href="/admin/messages" class="group bg-[#1C2B3A] p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all relative overflow-hidden">
           <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12"></div>
           <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -138,8 +119,6 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-lg md:text-xl font-bold text-white mb-2 leading-tight">Buzón</h2>
           <p class="text-[10px] text-white/50 leading-relaxed line-clamp-2">Buzón de leads.</p>
         </a>
-
-        <!-- Security -->
         <a href="/admin/security" class="group bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-[#567C8D]/20">
           <div class="w-12 h-12 rounded-2xl bg-[#F5EFEB] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
             <svg class="w-6 h-6 text-[#1C2B3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -156,7 +135,6 @@ import Layout from '../../layouts/Layout.astro';
 <script>
   import { supabase } from '../../lib/supabase';
 
-  // Simple Client-Side Guard
   if (sessionStorage.getItem('admin_access') !== 'true') {
     window.location.href = '/admin';
   }
@@ -167,44 +145,59 @@ import Layout from '../../layouts/Layout.astro';
   });
 
   async function fetchStats() {
-      try {
-          const [
-              { data: visitsData },
-              { count: totalLeads },
-              { count: unreadLeads },
-              { count: portfolio },
-              { count: services }
-          ] = await Promise.all([
-              supabase.from('analytics').select('session_id'),
-              supabase.from('messages').select('*', { count: 'exact', head: true }),
-              supabase.from('messages').select('*', { count: 'exact', head: true }).eq('read', false),
-              supabase.from('portfolio').select('*', { count: 'exact', head: true }),
-              supabase.from('services').select('*', { count: 'exact', head: true })
-          ]);
+    try {
+      const [
+        // ── FIX Bug 3: Ya no traemos TODAS las filas de analytics.
+        // Supabase no tiene COUNT DISTINCT nativo vía JS client, así que
+        // pedimos solo los session_id con un límite generoso (5000).
+        // Para sitios con mucho tráfico considera una DB function o vista.
+        { data: visitsData },
+        { count: totalLeads },
+        { count: unreadLeads },
+        { count: portfolio },
+        { count: services }
+      ] = await Promise.all([
+        supabase
+          .from('analytics')
+          .select('session_id')
+          .limit(5000),                          // ← límite explícito en lugar de ilimitado
+        supabase.from('messages').select('*', { count: 'exact', head: true }),
+        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('read', false),
+        supabase.from('portfolio').select('*', { count: 'exact', head: true }),
+        supabase.from('services').select('*', { count: 'exact', head: true })
+      ]);
 
-          // Count unique sessions for accurate visit numbers
-          const uniqueSessions = visitsData ? new Set(visitsData.map(r => r.session_id)).size : 0;
-          const leadsTotal = totalLeads || 0;
-          const totalItems = (portfolio || 0) + (services || 0);
+      const uniqueSessions = visitsData
+        ? new Set(visitsData.map((r: any) => r.session_id)).size
+        : 0;
+      const leadsTotal = totalLeads || 0;
+      const totalItems = (portfolio || 0) + (services || 0);
 
-          document.getElementById('stat-visits').innerText = uniqueSessions.toLocaleString();
-          document.getElementById('stat-content').innerText = totalItems.toLocaleString();
+      const visitsEl  = document.getElementById('stat-visits');
+      const leadsEl   = document.getElementById('stat-leads');
+      const convEl    = document.getElementById('stat-conv');
+      const contentEl = document.getElementById('stat-content');
 
-          // Show unread leads badge if there are new messages
-          const leadsEl = document.getElementById('stat-leads');
-          if (unreadLeads && unreadLeads > 0 && leadsEl) {
-              leadsEl.innerHTML = `${leadsTotal} <span style="font-size:9px;background:#fffbeb;color:#f59e0b;padding:2px 8px;border-radius:9999px;margin-left:4px;font-weight:900">${unreadLeads} NEW</span>`;
-          } else if (leadsEl) {
-              leadsEl.innerText = leadsTotal.toLocaleString();
-          }
+      if (visitsEl)  visitsEl.innerText  = uniqueSessions.toLocaleString();
+      if (contentEl) contentEl.innerText = totalItems.toLocaleString();
 
-          if (uniqueSessions > 0) {
-              const conv = ((leadsTotal / uniqueSessions) * 100).toFixed(1);
-              document.getElementById('stat-conv').innerText = `${conv}%`;
-          }
-      } catch (e) {
-          console.error("Error loading stats", e);
+      if (leadsEl) {
+        if (unreadLeads && unreadLeads > 0) {
+          leadsEl.innerHTML = `${leadsTotal} <span style="font-size:9px;background:#fffbeb;color:#f59e0b;padding:2px 8px;border-radius:9999px;margin-left:4px;font-weight:900">${unreadLeads} NEW</span>`;
+        } else {
+          leadsEl.innerText = leadsTotal.toLocaleString();
+        }
       }
+
+      // ── FIX Bug 6: Conversión no puede superar 100% ──────────────────────
+      if (convEl && uniqueSessions > 0) {
+        const rawConv = (leadsTotal / uniqueSessions) * 100;
+        const conv    = Math.min(rawConv, 100).toFixed(1);   // ← cap en 100%
+        convEl.innerText = `${conv}%`;
+      }
+    } catch (e) {
+      console.error('Error loading stats', e);
+    }
   }
 
   fetchStats();

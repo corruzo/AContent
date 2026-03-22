@@ -21,12 +21,10 @@ import Layout from '../../layouts/Layout.astro';
         <span class="text-[10px] font-black uppercase tracking-widest text-[#567C8D]/60">Cargando testimonios...</span>
       </div>
 
-      <div class="grid gap-6 opacity-0 transition-opacity duration-1000" id="testimonials-list">
-         <!-- Data injected via JS -->
-      </div>
+      <div class="grid gap-6 opacity-0 transition-opacity duration-1000" id="testimonials-list"></div>
     </div>
 
-    <!-- Testimonial Modal -->
+    <!-- Modal -->
     <div id="testimonial-modal" class="fixed inset-0 bg-[#1C2B3A]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
         <div class="bg-white rounded-[40px] max-w-lg w-full p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-8">
@@ -38,32 +36,42 @@ import Layout from '../../layouts/Layout.astro';
 
             <form id="testimonial-form" class="space-y-6">
                 <input type="hidden" id="testimonial-id" name="id" />
+
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Texto del Testimonio</label>
-                    <textarea id="field-text" name="text" required rows="4" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]"></textarea>
+                    <!-- name="content" coincide con la columna DB -->
+                    <textarea id="field-text" name="content" required rows="4"
+                        class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]"></textarea>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Autor</label>
-                        <input type="text" id="field-author" name="author" required class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                        <!-- name="name" coincide con la columna DB -->
+                        <input type="text" id="field-author" name="name" required
+                            class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
                     </div>
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Iniciales (Avatar)</label>
-                        <input type="text" id="field-avatar" name="avatar" maxlength="2" placeholder="Ej: RA" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                        <!-- name="image_url" coincide con la columna DB — almacena las iniciales como texto -->
+                        <input type="text" id="field-avatar" name="image_url" maxlength="2" placeholder="Ej: RA"
+                            class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Rol / Empresa</label>
-                    <input type="text" id="field-role" name="role" required placeholder="Ej: Director Comercial" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                    <input type="text" id="field-role" name="role" required placeholder="Ej: Director Comercial"
+                        class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
                 </div>
 
                 <div class="pt-6 border-t border-[#F5EFEB] flex flex-col gap-4">
-                    <button type="submit" id="save-testimonial-btn" class="bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl disabled:opacity-50">
+                    <button type="submit" id="save-testimonial-btn"
+                        class="bg-[#1C2B3A] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-[#567C8D] transition-all shadow-xl disabled:opacity-50">
                         Guardar Testimonio
                     </button>
-                    <button type="button" id="delete-confirm-btn" class="hidden bg-red-50 text-red-500 py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-red-500 hover:text-white transition-all border border-red-100">
+                    <button type="button" id="delete-confirm-btn"
+                        class="hidden bg-red-50 text-red-500 py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-red-500 hover:text-white transition-all border border-red-100">
                         Eliminar Testimonio
                     </button>
                 </div>
@@ -77,74 +85,72 @@ import Layout from '../../layouts/Layout.astro';
   import { supabase } from '../../lib/supabase';
   import { getTestimonials } from '../../utils/data';
 
-  const checkAuth = () => {
-    if (sessionStorage.getItem('admin_access') !== 'true') {
-      window.location.href = '/admin';
-      return false;
-    }
-    return true;
-  };
+  if (sessionStorage.getItem('admin_access') !== 'true') {
+    window.location.href = '/admin';
+  } else {
 
-  if (checkAuth()) {
-    const listContainer = document.getElementById('testimonials-list');
-    const spinner = document.getElementById('loading-spinner');
-    const modal = document.getElementById('testimonial-modal');
+    const listContainer  = document.getElementById('testimonials-list');
+    const spinner        = document.getElementById('loading-spinner');
+    const modal          = document.getElementById('testimonial-modal');
     const testimonialForm = document.getElementById('testimonial-form') as HTMLFormElement;
-    const addBtn = document.getElementById('add-testimonial-btn');
-    const closeBtn = document.getElementById('close-modal');
-    const deleteBtn = document.getElementById('delete-confirm-btn');
+    const addBtn         = document.getElementById('add-testimonial-btn');
+    const closeBtn       = document.getElementById('close-modal');
+    const deleteBtn      = document.getElementById('delete-confirm-btn');
+
+    // ── unicode-safe encode/decode ─────────────────────────────────────────
+    const enc = (obj: unknown) => btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+    const dec = (s: string)    => JSON.parse(decodeURIComponent(escape(atob(s))));
 
     async function loadTestimonials() {
         try {
-            if (spinner) spinner.classList.remove('hidden');
-            if (listContainer) listContainer.classList.add('opacity-0');
-            
+            if (spinner)        spinner.classList.remove('hidden');
+            if (listContainer)  listContainer.classList.add('opacity-0');
+
+            // getTestimonials() ya mapea content→text, name→author, image_url→avatar
             const testimonials = await getTestimonials();
             if (!listContainer) return;
 
-            listContainer.innerHTML = testimonials.map(t => `
-                <div class="bg-white p-8 rounded-[32px] shadow-lg flex flex-col gap-6 group hover:shadow-2xl transition-all border border-transparent hover:border-[#567C8D]/20 edit-btn cursor-pointer" 
-                     data-testimonial="${btoa(unescape(encodeURIComponent(JSON.stringify(t))))}">
-                    <p class="text-lg text-[#1C2B3A] italic italic font-medium">"${t.text}"</p>
-                    <div class="flex items-center gap-4 pt-4 border-t border-[#F5EFEB]">
-                        <div class="w-10 h-10 rounded-full bg-[#1C2B3A] flex items-center justify-center text-xs font-bold text-white uppercase">${t.avatar || t.author.charAt(0)}</div>
-                        <div>
-                           <p class="text-sm font-bold text-[#1C2B3A]">${t.author}</p>
-                           <p class="text-[9px] font-black text-[#567C8D] uppercase tracking-widest">${t.role}</p>
+            listContainer.innerHTML = testimonials.length === 0
+                ? '<div class="py-20 text-center"><p class="text-[#567C8D] font-bold uppercase tracking-widest text-xs">Aún no hay testimonios cargados.</p></div>'
+                : testimonials.map(t => `
+                    <div class="bg-white p-8 rounded-[32px] shadow-lg flex flex-col gap-6 group hover:shadow-2xl transition-all border border-transparent hover:border-[#567C8D]/20 edit-btn cursor-pointer"
+                         data-t="${enc(t)}">
+                        <p class="text-lg text-[#1C2B3A] italic font-medium">"${t.text}"</p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-[#F5EFEB]">
+                            <div class="w-10 h-10 rounded-full bg-[#1C2B3A] flex items-center justify-center text-xs font-bold text-white uppercase">${t.avatar || t.author.charAt(0)}</div>
+                            <div>
+                               <p class="text-sm font-bold text-[#1C2B3A]">${t.author}</p>
+                               <p class="text-[9px] font-black text-[#567C8D] uppercase tracking-widest">${t.role}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
-
-            if (testimonials.length === 0) {
-                listContainer.innerHTML = '<div class="py-20 text-center"><p class="text-[#567C8D] font-bold uppercase tracking-widest text-xs">Aún no hay testimonios cargados.</p></div>';
-            }
+                `).join('');
 
             listContainer.classList.remove('opacity-0');
             if (spinner) spinner.classList.add('hidden');
 
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const encodedData = (btn as HTMLElement).dataset.testimonial || '';
-                    const data = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
-                    openModal(data);
+                    const data = dec((btn as HTMLElement).dataset.t || '{}');
+                    openModal(data as any);
                 });
             });
         } catch (e) {
-            console.error("Error loading testimonials", e);
+            console.error('Error loading testimonials', e);
         }
     }
 
     function openModal(t: any = null) {
         testimonialForm.reset();
-        
+
         if (t) {
             document.getElementById('modal-title')!.innerText = 'Editar Testimonio';
             (document.getElementById('testimonial-id') as HTMLInputElement).value = t.id;
-            (document.getElementById('field-text') as HTMLTextAreaElement).value = t.text;
-            (document.getElementById('field-author') as HTMLInputElement).value = t.author;
-            (document.getElementById('field-role') as HTMLInputElement).value = t.role;
-            (document.getElementById('field-avatar') as HTMLInputElement).value = t.avatar || '';
+            // El campo en el form usa name="content" pero el objeto mapeado tiene .text
+            (document.getElementById('field-text') as HTMLTextAreaElement).value  = t.text   || '';
+            (document.getElementById('field-author') as HTMLInputElement).value   = t.author || '';
+            (document.getElementById('field-role') as HTMLInputElement).value     = t.role   || '';
+            (document.getElementById('field-avatar') as HTMLInputElement).value   = t.avatar || '';
             if (deleteBtn) deleteBtn.classList.remove('hidden');
         } else {
             document.getElementById('modal-title')!.innerText = 'Nuevo Testimonio';
@@ -156,10 +162,10 @@ import Layout from '../../layouts/Layout.astro';
         modal?.classList.add('flex');
     }
 
-    function closeModal() {
+    const closeModal = () => {
         modal?.classList.add('hidden');
         modal?.classList.remove('flex');
-    }
+    };
 
     addBtn?.addEventListener('click', () => openModal());
     closeBtn?.addEventListener('click', closeModal);
@@ -170,50 +176,41 @@ import Layout from '../../layouts/Layout.astro';
         saveBtn.disabled = true;
 
         const formData = new FormData(testimonialForm);
+
+        // ─── FIX: nombres de campo correctos ─────────────────────────────
+        // La DB tiene columnas: name, role, content, image_url
+        // El form ahora tiene name="name", name="role", name="content", name="image_url"
         const payload = {
-            text: formData.get('text'),
-            author: formData.get('author'),
-            role: formData.get('role'),
-            avatar: formData.get('avatar')
+            name:      formData.get('name'),       // autor
+            content:   formData.get('content'),    // texto del testimonio
+            role:      formData.get('role'),
+            image_url: formData.get('image_url'),  // iniciales (ej: "RA")
         };
 
         const id = formData.get('id');
 
         try {
-            let error;
-            if (id) {
-                const { error: err } = await supabase.from('testimonials').update(payload).eq('id', id);
-                error = err;
-            } else {
-                const { error: err } = await supabase.from('testimonials').insert([payload]);
-                error = err;
-            }
+            const { error } = id
+                ? await supabase.from('testimonials').update(payload).eq('id', id)
+                : await supabase.from('testimonials').insert([payload]);
 
             if (error) throw error;
-            
             closeModal();
             loadTestimonials();
         } catch (err: any) {
-            alert("Error al guardar: " + err.message);
+            alert('Error al guardar: ' + err.message);
         } finally {
             saveBtn.disabled = false;
         }
     });
 
     deleteBtn?.addEventListener('click', async () => {
-        if (!confirm('¿Estás seguro de que deseas eliminar este testimonio?')) return;
-        
+        if (!confirm('¿Eliminar este testimonio permanentemente?')) return;
         const id = (document.getElementById('testimonial-id') as HTMLInputElement).value;
         if (!id) return;
-
-        try {
-            const { error } = await supabase.from('testimonials').delete().eq('id', id);
-            if (error) throw error;
-            closeModal();
-            loadTestimonials();
-        } catch (err: any) {
-            alert("Error al eliminar: " + err.message);
-        }
+        const { error } = await supabase.from('testimonials').delete().eq('id', id);
+        if (error) alert('Error al eliminar: ' + error.message);
+        else { closeModal(); loadTestimonials(); }
     });
 
     loadTestimonials();
