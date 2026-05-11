@@ -13,13 +13,13 @@ import Layout from '../../layouts/Layout.astro';
       
       <form id="login-form" class="space-y-6">
         <div>
-          <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Usuario</label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Correo Electrónico</label>
           <input 
-            type="text" 
-            id="username" 
+            type="email" 
+            id="email" 
             required 
             class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
-            placeholder="Introduce tu usuario"
+            placeholder="Introduce tu correo"
           />
         </div>
         <div>
@@ -31,6 +31,11 @@ import Layout from '../../layouts/Layout.astro';
             class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] focus:ring-2 focus:ring-[#567C8D] transition-all"
             placeholder="••••••••"
           />
+          <div class="flex justify-end mt-2">
+            <button type="button" id="forgot-password-btn" class="text-[10px] font-bold text-[#567C8D] hover:text-[#1C2B3A] transition-colors uppercase tracking-wider">
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
         </div>
         
         <button 
@@ -48,38 +53,68 @@ import Layout from '../../layouts/Layout.astro';
 <script>
   import { supabase } from '../../lib/supabase';
 
-  async function hashPassword(str: string) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
-  }
-
   const form = document.getElementById('login-form');
   const errorMsg = document.getElementById('error-msg');
+  const forgotPasswordBtn = document.getElementById('forgot-password-btn');
   
+  // Login standard
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const userInput = (document.getElementById('username') as HTMLInputElement).value;
+    const emailInput = (document.getElementById('email') as HTMLInputElement).value;
     const passInput = (document.getElementById('password') as HTMLInputElement).value;
     
-    if (errorMsg) errorMsg.innerText = 'Validando...';
+    if (errorMsg) {
+      errorMsg.innerText = 'Validando...';
+      errorMsg.className = 'text-xs text-[#567C8D] font-bold text-center h-4';
+    }
 
-    const hashedPassword = await hashPassword(passInput);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailInput,
+      password: passInput,
+    });
 
-    const { data, error } = await supabase
-      .from('admin_access')
-      .select('username, password')
-      .eq('id', 1)
-      .single();
+    if (!error && data.user) {
+      sessionStorage.setItem('admin_access', 'true');
+      window.location.href = '/admin/dashboard';
+    } else {
+      if (errorMsg) {
+        errorMsg.innerText = 'Correo o contraseña incorrectos';
+        errorMsg.className = 'text-xs text-red-500 font-bold text-center h-4';
+      }
+    }
+  });
 
-    if (!error && data) {
-      if (userInput === data.username && hashedPassword === data.password) {
-        sessionStorage.setItem('admin_access', 'true');
-        window.location.href = '/admin/dashboard';
-      } else {
-        if (errorMsg) errorMsg.innerText = 'Usuario o contraseña incorrectos';
+  // Recuperar contraseña
+  forgotPasswordBtn?.addEventListener('click', async () => {
+    const emailInput = (document.getElementById('email') as HTMLInputElement).value;
+    
+    if (!emailInput) {
+      if (errorMsg) {
+        errorMsg.innerText = 'Por favor ingresa tu correo primero';
+        errorMsg.className = 'text-xs text-amber-500 font-bold text-center h-4';
+      }
+      return;
+    }
+
+    if (errorMsg) {
+      errorMsg.innerText = 'Enviando correo de recuperación...';
+      errorMsg.className = 'text-xs text-[#567C8D] font-bold text-center h-4';
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(emailInput, {
+      redirectTo: window.location.origin + '/admin/security',
+    });
+
+    if (error) {
+      if (errorMsg) {
+        errorMsg.innerText = 'Error al enviar correo: ' + error.message;
+        errorMsg.className = 'text-xs text-red-500 font-bold text-center h-4';
       }
     } else {
-      if (errorMsg) errorMsg.innerText = 'Error de conexión con la base de datos';
+      if (errorMsg) {
+        errorMsg.innerText = '¡Correo enviado! Revisa tu bandeja de entrada o spam.';
+        errorMsg.className = 'text-xs text-emerald-500 font-bold text-center h-4';
+      }
     }
   });
 </script>
