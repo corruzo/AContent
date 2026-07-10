@@ -115,31 +115,34 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
 </section>
 
 <!-- ── LIGHTBOX ── -->
-<div id="about-lightbox" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 invisible pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
-  <div class="absolute inset-0 bg-[#1C2B3A]/95 backdrop-blur-3xl"></div>
+<div id="about-lightbox" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#060e14] opacity-0 invisible pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
+  <div class="absolute inset-0 bg-[#060e14] backdrop-blur-2xl"></div>
   
-  <button id="close-about-lightbox" class="absolute top-6 right-6 md:top-10 md:right-20 text-white p-4 md:p-5 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[1030] backdrop-blur-md border border-white/10 active:scale-90">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-  </button>
+  <!-- ── TOP BAR ── -->
+  <div class="absolute top-0 left-0 right-0 z-[1030] flex items-center justify-between px-6 md:px-14 py-5 border-b border-white/5 bg-gradient-to-b from-black/30 to-transparent">
+    <div>
+      <p class="text-[10px] font-black uppercase tracking-[0.35em] text-[#C8D9E6]/50 mb-0.5">Trayectoria</p>
+      <span class="text-white font-display text-xl font-bold">Galería</span>
+    </div>
+    <button id="close-about-lightbox" aria-label="Cerrar galería" class="w-11 h-11 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/15 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
 
-  <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="about-lb-content">
+  <div class="relative w-full h-full flex items-center justify-center pt-24 pb-8 px-8 md:px-24 z-[1010] pointer-events-none" id="about-lb-content">
     <!-- Improved Brand Spinner -->
     <div id="about-modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 invisible transition-all duration-300 z-[1050] pointer-events-none">
-       <div class="flex flex-col items-center gap-6">
-          <div class="relative">
-            <div class="w-16 h-16 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
-            </div>
-          </div>
-          <div class="text-center">
-            <span class="block text-[11px] font-black uppercase tracking-[0.5em] text-white animate-pulse mb-1">Anais Content</span>
-            <span class="text-[8px] font-bold uppercase tracking-[0.3em] text-white/40">Cargando Trayectoria...</span>
-          </div>
+       <div class="flex flex-col items-center gap-4">
+          <div class="w-10 h-10 border-2 border-white/10 border-t-[#C8D9E6] rounded-full animate-spin"></div>
+          <span class="text-[10px] font-black uppercase tracking-[0.5em] text-white/30">Cargando</span>
        </div>
     </div>
     <img id="lightbox-img" src="" alt="Vista previa ampliada"
-      style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateY(12px);pointer-events:auto;" />
+      class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl select-none"
+      style="max-height: calc(100vh - 160px); box-shadow:0 40px 80px rgba(0,0,0,0.7); transition:opacity 0.3s ease,transform 0.3s ease; opacity:0; transform:scale(0.97); pointer-events:auto;"
+      draggable="false" />
   </div>
 </div>
 
@@ -174,6 +177,9 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .about-photo-card { will-change: transform; user-select: none; }
+
+  @keyframes lb-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  #about-lightbox:not(.invisible) { animation: lb-in 0.35s ease forwards; }
 </style>
 
 <script is:inline>
@@ -185,20 +191,17 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
     const img = document.getElementById('lightbox-img');
     if (!lb || !img) return;
 
-    // Reset first so transition fires even for the same src
-    // Fade out state
     img.style.opacity   = '0';
-    img.style.transform = 'translateY(12px)';
+    img.style.transform = 'scale(0.97)';
 
     lb.classList.remove('opacity-0', 'pointer-events-none', 'invisible');
     document.body.style.overflow = 'hidden';
 
-    // Show spinner ONLY if not cached
     const spinner = document.getElementById('about-modal-spinner');
     
     const show = () => {
       img.style.opacity   = '1';
-      img.style.transform = 'translateY(0)';
+      img.style.transform = 'scale(1)';
       if (spinner) spinner.classList.add('opacity-0', 'invisible');
     };
 
@@ -221,7 +224,7 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
     document.body.style.overflow = '';
     if (img) {
       img.style.opacity   = '0';
-      img.style.transform = 'translateY(12px)';
+      img.style.transform = 'scale(0.97)';
       img.src = '';
       img.onload = null;
     }
@@ -233,7 +236,6 @@ const displayItems = hasPhotos ? filteredGallery : [null, null, null, null];
     const lbContent = document.getElementById('about-lb-content');
     if (!lb) return;
 
-    // onclick = safe to re-assign; no duplicate listeners
     document.querySelectorAll('.about-photo-card').forEach(card => {
       card.onclick = () => {
         const img = card.querySelector('img');
