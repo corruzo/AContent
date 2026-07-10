@@ -1,0 +1,806 @@
+---
+// src/pages/portfolio.astro — Galería completa con paginación y filtros
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { Image, getImage } from 'astro:assets';
+import { getProjects, normalizeAssetPath, getSiteData } from '../utils/data';
+
+const ITEMS_PER_PAGE = 12;
+const formatViews = (v: number) => v >= 1000 ? (v / 1000).toFixed(1).replace('.0', '') + 'K' : (v || 0).toString();
+
+const siteData = await getSiteData();
+const rawProjects = await getProjects();
+const portfolioAssets = import.meta.glob<{ default: any }>('../assets/portfolio/**/*.{svg,png,jpg,jpeg,webp,gif,mp4,webm,SVG,PNG,JPG,JPEG,WEBP,GIF,MP4,WEBM}', { eager: true });
+
+const allProjects = await Promise.all(rawProjects.map(async (p: any, i: number) => {
+  const isRemoteMain = p.image && p.image.startsWith('http');
+  let asset: any = null;
+  let mainOptimizedSrc = p.image || '';
+
+  if (p.image && !isRemoteMain) {
+    const normPath = normalizeAssetPath(p.image);
+    const assetKey = Object.keys(portfolioAssets).find(k => k.toLowerCase() === normPath.toLowerCase());
+    asset = assetKey ? portfolioAssets[assetKey].default : null;
+    if (asset) {
+      try {
+        const optimizedMain = await getImage({ src: asset, format: 'webp', width: 1600, quality: 80 });
+        mainOptimizedSrc = optimizedMain.src;
+      } catch { mainOptimizedSrc = p.image; }
+    }
+  }
+
+  const galleryUrls = (p.gallery || []).map((imgPath: string) => {
+    if (!imgPath) return null;
+    if (imgPath.startsWith('http')) return imgPath;
+    const nPath = normalizeAssetPath(imgPath);
+    const key = Object.keys(portfolioAssets).find(k => k.toLowerCase() === nPath.toLowerCase());
+    return key ? portfolioAssets[key].default.src : null;
+  }).filter(Boolean);
+
+  let isWide = false;
+  if (asset && typeof asset === 'object' && asset.width && asset.height) {
+    isWide = (asset.width / asset.height) > 1.25;
+  } else if (isRemoteMain) {
+    isWide = (i % 3) === 2;
+  }
+
+  return {
+    id: p.id,
+    title:    p.title    || 'Proyecto Sin Nombre',
+    location: p.location || '',
+    category: p.category || '',
+    color:    p.color    || '#1C2B3A',
+    image:    asset || p.image,
+    isWide,
+    mediaSrc: mainOptimizedSrc,
+    gallery:  [mainOptimizedSrc, ...galleryUrls].filter((v: any, idx: number, a: any[]) => v && a.indexOf(v) === idx),
+    views:    typeof p.views === 'number' ? p.views : 0,
+    youtubeUrl: p.youtubeUrl || p.youtube_url || '',
+  };
+}));
+
+const categories: string[] = ['Todos', ...Array.from(new Set(allProjects.map((p: any) => p.category).filter(Boolean)))];
+const hasCategories = categories.length > 1;
+
+const projectsForClient = allProjects.map(p => ({
+  id: p.id,
+  title: p.title,
+  location: p.location,
+  category: p.category,
+  color: p.color,
+  mediaSrc: p.mediaSrc,
+  gallery: p.gallery,
+  views: typeof p.views === 'number' ? p.views : 0,
+  youtubeUrl: p.youtubeUrl || ''
+}));
+---
+
+<Layout
+  title={`Portafolio · ${siteData.brandName}`}
+  description={`Galería completa de propiedades fotografiadas y producidas por ${siteData.brandName}. ${allProjects.length} proyectos de marketing inmobiliario.`}
+>
+  <Navbar />
+  <main>
+    <!-- ── HERO HEADER ── -->
+    <section class="relative pt-28 pb-0 md:pt-36 bg-[#F5EFEB] overflow-hidden">
+      <!-- Decorative grid texture -->
+      <div class="absolute inset-0 opacity-[0.03]"
+        style="background-image: linear-gradient(#1C2B3A 1px, transparent 1px), linear-gradient(90deg, #1C2B3A 1px, transparent 1px); background-size: 60px 60px;">
+      </div>
+      <!-- Radial glow -->
+      <div class="absolute inset-0 opacity-[0.07]"
+        style="background-image: radial-gradient(ellipse at 10% 80%, #567C8D 0%, transparent 55%), radial-gradient(ellipse at 90% 10%, #1C2B3A 0%, transparent 55%);">
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 relative z-10 pb-14 md:pb-20">
+        <!-- Back link -->
+        <a
+          href="/#portfolio"
+          data-astro-prefetch
+          class="inline-flex items-center gap-2 text-[#567C8D]/60 hover:text-[#1C2B3A] text-[10px] font-black uppercase tracking-[0.35em] mb-10 md:mb-14 transition-colors group"
+        >
+          <svg class="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Volver al Inicio
+        </a>
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-10 md:gap-16">
+          <!-- Title block -->
+          <div class="flex-1">
+            <h1 class="font-display text-6xl md:text-8xl lg:text-[7rem] font-bold text-[#1C2B3A] leading-[0.9] tracking-tight">
+              Nuestra<br/>
+              <span class="text-[#567C8D]">Colección</span>
+            </h1>
+            <!-- Decorative line -->
+            <div class="mt-8 md:mt-10 flex items-center gap-4">
+              <div class="h-px flex-1 max-w-[80px] bg-[#1C2B3A]/20"></div>
+              <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#567C8D]/70">Marketing Inmobiliario</p>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex items-end gap-8 md:gap-10 shrink-0 pb-1">
+            <div class="text-right md:text-left">
+              <p class="font-display text-7xl md:text-8xl font-bold text-[#1C2B3A] leading-none">{allProjects.length}</p>
+              <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#567C8D] mt-2">Proyectos</p>
+            </div>
+            <div class="w-px h-14 bg-[#1C2B3A]/15 hidden md:block"></div>
+            <div class="hidden md:block">
+              <p class="font-display text-7xl md:text-8xl font-bold text-[#1C2B3A] leading-none">{categories.length > 1 ? categories.length - 1 : 1}</p>
+              <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#567C8D] mt-2">Categorías</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom separator line -->
+      <div class="h-px bg-[#1C2B3A]/8 mx-6 md:mx-12 lg:mx-20"></div>
+    </section>
+
+    <!-- ── FILTERS + GRID ── -->
+    <section class="bg-[#F5EFEB] pt-4 pb-16 md:pb-24">
+      <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
+
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-2 mb-8">
+          {categories.map((cat) => (
+            <button
+              class:list={[
+                'filter-btn px-5 py-2 rounded-full border-2 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-300',
+                cat === 'Todos'
+                  ? 'bg-[#1C2B3A] text-white border-[#1C2B3A]'
+                  : 'bg-white text-[#567C8D] border-[#567C8D]/25 hover:border-[#1C2B3A] hover:text-[#1C2B3A] shadow-sm'
+              ]}
+              data-filter={cat}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <!-- Info bar -->
+        <div class="flex items-center justify-between mb-6 text-[10px] font-black uppercase tracking-[0.25em] text-[#567C8D]/60">
+          <span>Mostrando <span id="showing-count" class="text-[#1C2B3A]">1–{Math.min(ITEMS_PER_PAGE, allProjects.length)}</span> de {allProjects.length}</span>
+          <span>Página <span id="current-page-num" class="text-[#1C2B3A]">1</span></span>
+        </div>
+
+        <!-- Grid — fixed-height rows for harmony -->
+        <div id="projects-grid" class="grid grid-cols-2 md:grid-cols-3 auto-rows-[300px] md:auto-rows-[340px] gap-4 md:gap-5">
+          {allProjects.map((p, i) => (
+            <div
+              class:list={[
+                'portfolio-item relative rounded-[20px] md:rounded-[28px] overflow-hidden cursor-pointer group',
+                p.isWide ? 'col-span-2 md:col-span-2 row-span-1' : ''
+              ]}
+              data-index={i}
+              data-id={String(p.id)}
+              data-title={p.title}
+              data-gallery={JSON.stringify(p.gallery)}
+              data-youtube={p.youtubeUrl || ''}
+              role="button"
+              tabindex="0"
+              aria-label={`Ver galería de ${p.title}`}
+            >
+              <!-- Image -->
+              <div class="absolute inset-0 overflow-hidden bg-[#1C2B3A]">
+                {p.image ? (
+                  typeof p.image === 'string' ? (
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      class="w-full h-full object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <Image
+                      src={p.image}
+                      alt={p.title}
+                      class="w-full h-full object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-105"
+                      format="webp"
+                      quality={80}
+                    />
+                  )
+                ) : null}
+              </div>
+
+              <!-- Gradient overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0D1B26]/90 via-[#0D1B26]/10 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500"></div>
+
+              <!-- Badges top-right -->
+              <div class="absolute top-3 right-3 z-20 flex gap-1.5">
+                <span class="bg-black/40 backdrop-blur-md text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  {formatViews(p.views)}
+                </span>
+                {p.youtubeUrl && (
+                  <span class="bg-red-600/80 backdrop-blur-md text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/10">
+                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  </span>
+                )}
+              </div>
+
+              <!-- Info bottom -->
+              <div class="absolute inset-x-0 bottom-0 p-5 md:p-6 z-10 pointer-events-none">
+                <div class="transition-transform duration-400 translate-y-1 group-hover:translate-y-0">
+                  {p.category && (
+                    <span class="inline-block text-[8px] font-black uppercase tracking-[0.4em] text-[#C8D9E6]/60 mb-1.5">{p.category}</span>
+                  )}
+                  <h3 class="font-display text-lg md:text-xl font-bold text-white leading-tight">{p.title}</h3>
+                  {p.location && (
+                    <p class="flex items-center gap-1.5 text-[9px] text-white/50 mt-1.5 uppercase tracking-widest font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-400">
+                      <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      {p.location}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div class="absolute inset-0 z-30 cursor-pointer" aria-hidden="true"></div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-24 text-center">
+          <div class="w-16 h-16 rounded-full bg-[#1C2B3A]/10 flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-[#567C8D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <p class="text-[#567C8D] font-black text-sm uppercase tracking-widest">Sin proyectos en esta categoría</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination-controls" class="hidden mt-16 flex items-center justify-center gap-4">
+          <button
+            id="prev-page"
+            class="inline-flex items-center gap-3 px-8 py-4 rounded-full border-2 border-[#1C2B3A]/20 text-[#1C2B3A] font-black text-[11px] uppercase tracking-widest hover:bg-[#1C2B3A] hover:text-white hover:border-[#1C2B3A] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Anterior
+          </button>
+
+          <div id="page-numbers" class="flex items-center gap-2"></div>
+
+          <button
+            id="next-page"
+            class="inline-flex items-center gap-3 px-8 py-4 rounded-full border-2 border-[#1C2B3A]/20 text-[#1C2B3A] font-black text-[11px] uppercase tracking-widest hover:bg-[#1C2B3A] hover:text-white hover:border-[#1C2B3A] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Siguiente
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<!-- ── LIGHTBOX MODAL — Premium Brand Design ── -->
+<div
+  id="portfolio-modal"
+  class="fixed inset-0 z-[1000] opacity-0 invisible pointer-events-none transition-opacity duration-500 overflow-hidden"
+  aria-modal="true"
+  role="dialog"
+  aria-label="Galería de imágenes"
+>
+  <!-- Dark backdrop -->
+  <div class="absolute inset-0 bg-[#060e14] backdrop-blur-2xl"></div>
+
+  <!-- ── TOP BAR ── -->
+  <div class="absolute top-0 left-0 right-0 z-[1030] flex items-center justify-between px-6 md:px-14 py-5 border-b border-white/5 bg-gradient-to-b from-black/30 to-transparent">
+    <div>
+      <p id="gallery-title" class="text-[10px] font-black uppercase tracking-[0.35em] text-[#C8D9E6]/50 mb-0.5 truncate max-w-xs md:max-w-md">Proyecto</p>
+      <span id="gallery-counter" class="text-white font-display text-xl font-bold">1 / 1</span>
+    </div>
+    <button
+      id="modal-close"
+      aria-label="Cerrar galería"
+      class="w-11 h-11 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/15 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90"
+    >
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── NAV ARROWS ── -->
+  <button
+    id="prev-btn"
+    aria-label="Imagen anterior"
+    class="absolute left-3 md:left-7 top-1/2 -translate-y-1/2 z-[1020] w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/18 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90 group"
+  >
+    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <button
+    id="next-btn"
+    aria-label="Imagen siguiente"
+    class="absolute right-3 md:right-7 top-1/2 -translate-y-1/2 z-[1020] w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/18 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90 group"
+  >
+    <svg class="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div id="modal-content-wrapper" class="absolute inset-0 flex items-center justify-center pt-20 pb-32 px-16 md:px-24 z-[1010]">
+
+    <!-- Loading spinner -->
+    <div id="modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-[1050]">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-10 h-10 border-2 border-white/10 border-t-[#C8D9E6] rounded-full animate-spin"></div>
+        <span class="text-[10px] font-black uppercase tracking-[0.5em] text-white/30">Cargando</span>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="modal-error" class="hidden flex-col items-center gap-4 text-center">
+      <svg class="w-12 h-12 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <p class="text-white/30 text-sm font-bold uppercase tracking-widest">Imagen no disponible</p>
+    </div>
+
+    <!-- Main image -->
+    <img
+      id="modal-image"
+      src=""
+      alt="Vista previa del proyecto"
+      class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl hidden opacity-0 transition-all duration-300 select-none"
+      style="box-shadow:0 40px 80px rgba(0,0,0,0.7); max-height: calc(100vh - 210px);"
+      draggable="false"
+    />
+
+    <!-- Video -->
+    <video
+      id="modal-video"
+      src=""
+      autoplay
+      loop
+      muted
+      playsinline
+      class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl hidden opacity-0 transition-all duration-300"
+      style="box-shadow:0 40px 80px rgba(0,0,0,0.7); max-height: calc(100vh - 210px);"
+    ></video>
+
+    <!-- YouTube overlay -->
+    <div id="youtube-overlay" class="absolute inset-0 hidden items-center justify-center flex-col z-[1060] bg-[#0D1B26]/92 backdrop-blur-md opacity-0 transition-opacity duration-500">
+      <div class="text-center px-8 max-w-sm">
+        <p class="text-[10px] font-black uppercase tracking-[0.4em] text-[#C8D9E6]/40 mb-3">Contenido externo</p>
+        <h3 class="text-white font-display text-2xl md:text-3xl font-bold mb-8 leading-tight">Continúa viendo en YouTube</h3>
+        <a
+          id="youtube-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-3 bg-red-600 text-white font-black uppercase tracking-widest text-[11px] px-8 py-4 rounded-full hover:bg-red-500 hover:scale-105 transition-all shadow-2xl shadow-red-900/30 active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+          Ver Video Completo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── THUMBNAIL STRIP ── -->
+  <div class="absolute bottom-0 left-0 right-0 z-[1020] pb-5 pt-4 px-6 bg-gradient-to-t from-black/50 to-transparent">
+    <div id="thumbnail-strip" class="flex items-center justify-center gap-2 overflow-x-auto max-w-2xl mx-auto" style="scrollbar-width:none;-ms-overflow-style:none;"></div>
+  </div>
+</div>
+
+<style>
+  #thumbnail-strip::-webkit-scrollbar { display: none; }
+  .lb-thumb { flex-shrink:0; width:50px; height:36px; border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:all 0.2s ease; opacity:0.4; }
+  .lb-thumb:hover { opacity:0.75; transform:scale(1.06); }
+  .lb-thumb.active { border-color:#C8D9E6; opacity:1; transform:scale(1.1); }
+  .lb-thumb img, .lb-thumb video { width:100%; height:100%; object-fit:cover; }
+  @keyframes lb-in { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  #portfolio-modal:not(.invisible) { animation: lb-in 0.35s ease forwards; }
+</style>
+
+<script>
+import { supabase } from '../lib/supabase';
+declare global {
+  interface Window { projectsData: any[]; itemsPerPage: number; }
+}
+</script>
+<script is:inline define:vars={{ projectsForClient, ITEMS_PER_PAGE }}>
+window.projectsData = projectsForClient;
+window.itemsPerPage = ITEMS_PER_PAGE;
+</script>
+
+<script>
+import { supabase } from '../lib/supabase';
+
+(function () {
+  'use strict';
+
+  // ─── Security helpers ────────────────────────────────────────────────
+  const $ = (id: string): HTMLElement | null => document.getElementById(id);
+
+  const sanitizeText = (s: string): string =>
+    String(s || '').slice(0, 500).replace(/[<>&"']/g, c =>
+      ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;', "'":'&#39;' }[c] || c));
+
+  const isValidSrc = (url: string): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    if (url.startsWith('/') || url.startsWith('./') || url.startsWith('/_')) return true;
+    try {
+      const u = new URL(url);
+      return ['http:', 'https:'].includes(u.protocol);
+    } catch { return false; }
+  };
+
+  const isVideoUrl = (url: string): boolean => /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
+
+  // ─── State ────────────────────────────────────────────────────────────
+  const ALL_PROJECTS: any[] = window.projectsData || [];
+  const PER_PAGE: number = window.itemsPerPage || 12;
+  let currentPage = 1;
+  let activeFilter = 'Todos';
+  let filteredProjects: any[] = [...ALL_PROJECTS];
+
+  // Lightbox
+  let gallery: string[] = [];
+  let lbIdx = 0;
+  let lbTitle = '';
+  let lbYtUrl = '';
+  let ytTimer: ReturnType<typeof setTimeout> | null = null;
+  let kbFn: ((e: KeyboardEvent) => void) | null = null;
+  let touchX0 = 0, touchY0 = 0;
+
+  // ─── Lightbox helpers ────────────────────────────────────────────────
+  const resetYT = () => {
+    if (ytTimer) { clearTimeout(ytTimer); ytTimer = null; }
+    const ov = $('youtube-overlay');
+    if (!ov) return;
+    ov.classList.add('opacity-0');
+    setTimeout(() => { ov.classList.add('hidden'); ov.classList.remove('flex'); }, 300);
+  };
+
+  const showSpinner = (on: boolean) => {
+    const sp = $('modal-spinner');
+    if (sp) sp.classList.toggle('opacity-0', !on);
+  };
+
+  const showErrorState = (on: boolean) => {
+    const er = $('modal-error');
+    if (!er) return;
+    er.classList.toggle('hidden', !on);
+    er.classList.toggle('flex', on);
+  };
+
+  const rebuildThumbs = () => {
+    const strip = $('thumbnail-strip');
+    if (!strip) return;
+    strip.innerHTML = '';
+    gallery.forEach((url, i) => {
+      if (!isValidSrc(url)) return;
+      const wrap = document.createElement('div');
+      wrap.className = `lb-thumb${i === lbIdx ? ' active' : ''}`;
+      wrap.setAttribute('role', 'button');
+      wrap.setAttribute('aria-label', `Ver imagen ${i + 1}`);
+      wrap.setAttribute('tabindex', '0');
+      if (isVideoUrl(url)) {
+        const v = document.createElement('video');
+        v.src = url; v.muted = true; v.preload = 'metadata';
+        wrap.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url; img.alt = ''; img.loading = 'lazy';
+        img.onerror = () => { wrap.style.backgroundColor = '#1C2B3A'; };
+        wrap.appendChild(img);
+      }
+      wrap.onclick = () => lbGoto(i);
+      wrap.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); lbGoto(i); } };
+      strip.appendChild(wrap);
+    });
+  };
+
+  const syncThumbs = () => {
+    const strip = $('thumbnail-strip');
+    if (!strip) return;
+    strip.querySelectorAll('.lb-thumb').forEach((el, i) => el.classList.toggle('active', i === lbIdx));
+    const active = strip.querySelector('.lb-thumb.active') as HTMLElement | null;
+    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  };
+
+  const lbGoto = (newIdx: number) => {
+    resetYT();
+    if (!gallery.length) return;
+    const img = $('modal-image') as HTMLImageElement | null;
+    const vid = $('modal-video') as HTMLVideoElement | null;
+    if (!img || !vid) return;
+
+    lbIdx = ((newIdx % gallery.length) + gallery.length) % gallery.length;
+    const url = gallery[lbIdx];
+
+    // Update header
+    const counter = $('gallery-counter');
+    const titleEl = $('gallery-title');
+    if (counter) counter.textContent = `${lbIdx + 1} / ${gallery.length}`;
+    if (titleEl)  titleEl.textContent = sanitizeText(lbTitle);
+
+    if (!url || !isValidSrc(url)) { showSpinner(false); showErrorState(true); return; }
+    showErrorState(false);
+
+    // Fade out
+    img.style.opacity = '0'; img.style.transform = 'scale(0.97)';
+    vid.style.opacity = '0';
+
+    // Preload next
+    const ni = (lbIdx + 1) % gallery.length;
+    if (!isVideoUrl(gallery[ni]) && isValidSrc(gallery[ni])) new Image().src = gallery[ni];
+
+    syncThumbs();
+
+    const onReady = (target: HTMLElement) => {
+      showSpinner(false);
+      target.style.opacity = '1';
+      target.style.transform = 'scale(1)';
+
+      if (lbYtUrl) {
+        ytTimer = setTimeout(() => {
+          if (isVideoUrl(url)) vid.pause();
+          const ov = $('youtube-overlay');
+          const lnk = $('youtube-link') as HTMLAnchorElement | null;
+          if (ov && lnk) {
+            lnk.href = lbYtUrl;
+            ov.classList.remove('hidden');
+            ov.classList.add('flex');
+            requestAnimationFrame(() => ov.classList.remove('opacity-0'));
+          }
+        }, 5000);
+      }
+    };
+
+    if (isVideoUrl(url)) {
+      img.classList.add('hidden'); vid.classList.remove('hidden');
+      showSpinner(true);
+      vid.src = url;
+      vid.onloadeddata = () => onReady(vid);
+      vid.onerror = () => { showSpinner(false); showErrorState(true); };
+      vid.load();
+    } else {
+      vid.pause(); vid.src = ''; vid.classList.add('hidden');
+      img.classList.remove('hidden');
+      showSpinner(true);
+      const tmpImg = new Image();
+      tmpImg.onload = () => { img.src = url; onReady(img); };
+      tmpImg.onerror = () => { showSpinner(false); showErrorState(true); img.classList.add('hidden'); };
+      tmpImg.src = url;
+    }
+  };
+
+  const openLightbox = async (galleryJson: string, title: string, ytUrl: string, projectId: string) => {
+    try {
+      let parsed: any[] = [];
+      try { parsed = JSON.parse(galleryJson || '[]'); } catch { parsed = []; }
+      if (!Array.isArray(parsed)) parsed = [];
+
+      gallery = parsed
+        .filter((u): u is string => typeof u === 'string')
+        .filter(isValidSrc)
+        .slice(0, 50); // max 50 images
+
+      if (!gallery.length) { console.warn('[Lightbox] No valid gallery images'); return; }
+
+      lbTitle  = String(title  || '').slice(0, 200);
+      lbYtUrl  = (typeof ytUrl === 'string' && ytUrl.startsWith('http')) ? ytUrl : '';
+      lbIdx    = 0;
+
+      const modal = $('portfolio-modal');
+      if (!modal) return;
+
+      resetYT();
+      modal.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
+      document.body.style.overflow = 'hidden';
+
+      rebuildThumbs();
+      lbGoto(0);
+
+      // Track view — fire and forget
+      if (projectId) {
+        const pid = parseInt(projectId, 10);
+        if (Number.isFinite(pid) && pid > 0) {
+          supabase.rpc('increment_views', { project_id: pid }).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.error('[Lightbox] openLightbox error:', err);
+    }
+  };
+
+  const closeLightbox = () => {
+    resetYT();
+    const modal = $('portfolio-modal');
+    const img   = $('modal-image') as HTMLImageElement | null;
+    const vid   = $('modal-video') as HTMLVideoElement | null;
+    if (!modal) return;
+    modal.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+    document.body.style.overflow = '';
+    if (img) { img.style.opacity = '0'; img.src = ''; img.classList.add('hidden'); img.onload = null; img.onerror = null; }
+    if (vid) { vid.pause(); vid.src = ''; vid.classList.add('hidden'); vid.onloadeddata = null; vid.onerror = null; }
+    const strip = $('thumbnail-strip');
+    if (strip) strip.innerHTML = '';
+    gallery = []; lbTitle = ''; lbYtUrl = ''; lbIdx = 0;
+  };
+
+  // ─── Pagination / Filtering ───────────────────────────────────────────
+  const applyFilter = (filter: string) => {
+    activeFilter = filter;
+    currentPage  = 1;
+    filteredProjects = filter === 'Todos'
+      ? [...ALL_PROJECTS]
+      : ALL_PROJECTS.filter((p: any) => p.category === filter);
+    render();
+  };
+
+  const goToPage = (page: number) => {
+    currentPage = page;
+    render();
+    const grid = $('projects-grid');
+    if (grid) {
+      const navH = document.getElementById('navbar')?.offsetHeight || 80;
+      window.scrollTo({ top: grid.getBoundingClientRect().top + window.scrollY - navH - 24, behavior: 'smooth' });
+    }
+  };
+
+  const render = () => {
+    const grid      = $('projects-grid');
+    const empty     = $('empty-state');
+    const pagCtrl   = $('pagination-controls');
+    const showingEl = $('showing-count');
+    const pageNumEl = $('current-page-num');
+    const prevBtn   = $('prev-page') as HTMLButtonElement | null;
+    const nextBtn   = $('next-page') as HTMLButtonElement | null;
+    const pageNums  = $('page-numbers');
+    if (!grid) return;
+
+    const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PER_PAGE));
+    currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+    const startIdx   = (currentPage - 1) * PER_PAGE;
+    const endIdx     = Math.min(startIdx + PER_PAGE, filteredProjects.length);
+    const visibleIds = new Set(filteredProjects.slice(startIdx, endIdx).map((p: any) => p.id));
+
+    let visible = 0;
+    let firstEl: HTMLElement | null = null;
+
+    grid.querySelectorAll<HTMLElement>('.portfolio-item').forEach(card => {
+      const di  = parseInt(card.getAttribute('data-index') || '-1');
+      const pid = card.getAttribute('data-id');
+      const project = ALL_PROJECTS[di];
+
+      if (!project || di < 0) { card.style.display = 'none'; return; }
+
+      const inFilter = activeFilter === 'Todos' || project.category === activeFilter;
+      const inPage   = visibleIds.has(project.id);
+
+      if (inFilter && inPage) {
+        card.style.display = '';
+        visible++;
+        if (!firstEl) firstEl = card;
+        card.onclick = () => openLightbox(
+          card.getAttribute('data-gallery') || '[]',
+          card.getAttribute('data-title')   || '',
+          card.getAttribute('data-youtube') || '',
+          card.getAttribute('data-id')      || ''
+        );
+        card.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            card.onclick?.(e as unknown as MouseEvent);
+          }
+        };
+      } else {
+        card.style.display = 'none';
+        card.onclick = null;
+      }
+    });
+
+    // First-item feature card
+    grid.querySelectorAll<HTMLElement>('.portfolio-item').forEach((card, _i) => {
+      if (card.style.display === 'none') return;
+      if (card === firstEl && visible >= 3) card.classList.add('md:col-span-2');
+      else card.classList.remove('md:col-span-2');
+    });
+
+    if (empty) { empty.classList.toggle('hidden', visible > 0); empty.classList.toggle('flex', visible === 0); }
+    if (showingEl) showingEl.textContent = filteredProjects.length > 0 ? `${startIdx + 1}–${endIdx}` : '0';
+    if (pageNumEl) pageNumEl.textContent = String(currentPage);
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+
+    if (pageNums) {
+      pageNums.innerHTML = '';
+      const maxV = 5;
+      let sP = Math.max(1, currentPage - Math.floor(maxV / 2));
+      let eP = Math.min(totalPages, sP + maxV - 1);
+      if (eP - sP < maxV - 1) sP = Math.max(1, eP - maxV + 1);
+      for (let pg = sP; pg <= eP; pg++) {
+        const b = document.createElement('button');
+        b.textContent = String(pg);
+        b.className = `w-10 h-10 rounded-full text-sm font-black transition-all duration-200 ${pg === currentPage ? 'bg-[#1C2B3A] text-white' : 'text-[#567C8D] hover:bg-[#1C2B3A]/10'}`;
+        b.onclick = () => goToPage(pg);
+        pageNums.appendChild(b);
+      }
+    }
+
+    if (pagCtrl) { pagCtrl.classList.toggle('hidden', totalPages <= 1); pagCtrl.classList.toggle('flex', totalPages > 1); }
+  };
+
+  // ─── Init ─────────────────────────────────────────────────────────────
+  const init = () => {
+    // Filters
+    document.querySelectorAll<HTMLElement>('.filter-btn').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('bg-[#1C2B3A]', 'text-white', 'border-[#1C2B3A]');
+          b.classList.add('bg-transparent', 'text-[#567C8D]', 'border-[#567C8D]/40');
+        });
+        btn.classList.add('bg-[#1C2B3A]', 'text-white', 'border-[#1C2B3A]');
+        btn.classList.remove('bg-transparent', 'text-[#567C8D]', 'border-[#567C8D]/40');
+        applyFilter(btn.getAttribute('data-filter') || 'Todos');
+      };
+    });
+
+    // Pagination
+    const pPrev = $('prev-page');
+    const pNext = $('next-page');
+    if (pPrev) pPrev.onclick = () => { if (currentPage > 1) goToPage(currentPage - 1); };
+    if (pNext) pNext.onclick = () => {
+      const tp = Math.ceil(filteredProjects.length / PER_PAGE);
+      if (currentPage < tp) goToPage(currentPage + 1);
+    };
+
+    // Lightbox buttons
+    const modal   = $('portfolio-modal');
+    const closeBtn= $('modal-close');
+    const prevLb  = $('prev-btn');
+    const nextLb  = $('next-btn');
+
+    if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); closeLightbox(); };
+    if (prevLb)   prevLb.onclick   = (e) => { e.stopPropagation(); lbGoto(lbIdx - 1); };
+    if (nextLb)   nextLb.onclick   = (e) => { e.stopPropagation(); lbGoto(lbIdx + 1); };
+
+    if (modal) modal.onclick = (e) => {
+      const t = e.target as HTMLElement;
+      if (t === modal || t.id === 'modal-content-wrapper') closeLightbox();
+    };
+
+    // Keyboard
+    if (kbFn) window.removeEventListener('keydown', kbFn);
+    kbFn = (e: KeyboardEvent) => {
+      const m = $('portfolio-modal');
+      if (!m || m.classList.contains('invisible')) return;
+      if (e.key === 'Escape')     { e.preventDefault(); closeLightbox(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); lbGoto(lbIdx + 1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lbGoto(lbIdx - 1); }
+    };
+    window.addEventListener('keydown', kbFn);
+
+    // Touch swipe
+    if (modal) {
+      modal.addEventListener('touchstart', (e: TouchEvent) => {
+        touchX0 = e.changedTouches[0].clientX;
+        touchY0 = e.changedTouches[0].clientY;
+      }, { passive: true });
+      modal.addEventListener('touchend', (e: TouchEvent) => {
+        const dx = e.changedTouches[0].clientX - touchX0;
+        const dy = e.changedTouches[0].clientY - touchY0;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 48) {
+          dx < 0 ? lbGoto(lbIdx + 1) : lbGoto(lbIdx - 1);
+        }
+      }, { passive: true });
+    }
+
+    render();
+  };
+
+  document.addEventListener('astro:page-load', init);
+  init();
+})();
+</script>

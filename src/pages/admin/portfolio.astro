@@ -45,34 +45,35 @@ import Layout from '../../layouts/Layout.astro';
                     </div>
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Categoría</label>
-                        <input type="text" id="field-category" name="category" placeholder="Ej: Luxury" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                        <select id="field-category" name="category" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] appearance-none cursor-pointer">
+                            <option value="">Sin categoría</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Ubicación</label>
+                        <input type="text" id="field-location" name="location" placeholder="Ej: San José, CR" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Enlace de YouTube (opcional)</label>
+                        <input type="url" id="field-youtube" name="youtube_url" placeholder="https://youtu.be/..." class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Ubicación</label>
-                    <input type="text" id="field-location" name="location" placeholder="Ej: San José, CR" class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A]" />
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Galería (Máximo 5 imágenes - La primera será la portada)</label>
-                    <div class="grid grid-cols-5 gap-4 mb-4" id="portfolio-gallery-preview">
-                        <!-- Image slots -->
-                    </div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-[#567C8D] mb-3">Galería — Imágenes y Videos (La primera será la portada)</label>
+                    <div class="grid grid-cols-5 gap-4 mb-4" id="portfolio-gallery-preview"></div>
                     <div class="flex items-center gap-4">
-                        <input type="file" id="field-gallery-upload" accept="image/*" multiple class="hidden" />
+                        <input type="file" id="field-gallery-upload" accept="image/*,video/mp4,video/webm" multiple class="hidden" />
                         <label for="field-gallery-upload" class="flex-grow bg-[#F5EFEB] text-[#1C2B3A] px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-[#1C2B3A] hover:text-white transition-all text-center">
-                            Añadir Imágenes
+                            Añadir Imágenes / Videos
                         </label>
                     </div>
                     <input type="hidden" id="field-image-url" name="image_url" />
                     <input type="hidden" id="field-gallery-json" name="gallery" />
-                    <p class="text-[9px] text-[#567C8D] mt-3 italic">Recomendado: 1200x800px. Arrastra para reordenar (próximamente) o elimina para cambiar el orden.</p>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="field-wide" name="is_wide" class="w-5 h-5 rounded border-[#567C8D] text-[#1C2B3A] focus:ring-[#1C2B3A]" />
-                    <label for="field-wide" class="text-[11px] font-bold text-[#567C8D] uppercase tracking-widest">¿Mostrar en ancho completo?</label>
+                    <p class="text-[9px] text-[#567C8D] mt-3 italic">Recomendado: 1200x800px. Puedes mezclar fotos y videos (mp4/webm). La primera será la portada.</p>
                 </div>
 
                 <div class="pt-6 border-t border-[#F5EFEB] flex flex-col md:flex-row gap-4">
@@ -116,6 +117,30 @@ import Layout from '../../layouts/Layout.astro';
 
     let currentGallery: string[] = [];
 
+    // Load categories into the select
+    async function loadCategories() {
+        const select = document.getElementById('field-category') as HTMLSelectElement;
+        if (!select) return;
+        const { data } = await supabase.from('categories').select('*').order('name');
+        if (!data) return;
+        // Keep the first "Sin categoría" option and add the rest
+        const existing = select.querySelector('option[value=""]');
+        select.innerHTML = '';
+        if (existing) select.appendChild(existing.cloneNode(true));
+        else {
+            const emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.textContent = 'Sin categoría';
+            select.appendChild(emptyOpt);
+        }
+        data.forEach((cat: any) => {
+            const opt = document.createElement('option');
+            opt.value = cat.name;
+            opt.textContent = cat.name;
+            select.appendChild(opt);
+        });
+    }
+
     async function loadProjects() {
         try {
             if (spinner) spinner.classList.remove('hidden');
@@ -132,6 +157,10 @@ import Layout from '../../layouts/Layout.astro';
                     <div class="flex-grow text-center md:text-left">
                         <h3 class="text-xl font-bold text-[#1C2B3A] mb-1">${p.title}</h3>
                         <p class="text-[10px] text-[#567C8D] uppercase tracking-widest font-black opacity-70">${p.category || 'Portfolio'} • ${p.location}</p>
+                        <div class="flex items-center justify-center md:justify-start gap-1 mt-2 text-[#567C8D] font-bold text-[10px] uppercase tracking-widest">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            ${p.views || 0} vistas
+                        </div>
                     </div>
                     <div class="flex gap-4">
                         <button class="edit-btn p-4 rounded-xl bg-[#F5EFEB] text-[#1C2B3A] hover:bg-[#1C2B3A] hover:text-white transition-all active:scale-90" 
@@ -206,9 +235,12 @@ import Layout from '../../layouts/Layout.astro';
             (document.getElementById('field-title') as HTMLInputElement).value = project.title;
             (document.getElementById('field-category') as HTMLInputElement).value = project.category || '';
             (document.getElementById('field-location') as HTMLInputElement).value = project.location || '';
-            (document.getElementById('field-wide') as HTMLInputElement).checked = project.wide;
+            (document.getElementById('field-youtube') as HTMLInputElement).value = project.youtubeUrl || project.youtube_url || '';
+            // Set category select value
+            const catSelect = document.getElementById('field-category') as HTMLSelectElement;
+            if (catSelect) catSelect.value = project.category || '';
             
-            // Map the gallery properly (handle cases where only single image existed)
+            // Map the gallery properly
             if (project.gallery && Array.isArray(project.gallery) && project.gallery.length > 0) {
                currentGallery = [...project.gallery];
             } else if (project.image) {
@@ -259,10 +291,12 @@ import Layout from '../../layouts/Layout.astro';
                 currentGallery.push(publicUrl);
                 updateGalleryUI();
             } catch (err: any) {
-                alert("Error al subir imagen: " + err.message);
+                alert("Error al subir archivo: " + err.message);
             }
         }
     });
+
+
 
     projectForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -280,9 +314,9 @@ import Layout from '../../layouts/Layout.astro';
             title: formData.get('title'),
             category: formData.get('category'),
             location: formData.get('location'),
+            youtube_url: formData.get('youtube_url') || null,
             image_url: currentGallery[0],
             gallery: currentGallery,
-            is_wide: formData.get('is_wide') === 'on'
         };
 
         const id = formData.get('id');
@@ -324,6 +358,7 @@ import Layout from '../../layouts/Layout.astro';
         }
     });
 
+    loadCategories();
     loadProjects();
   }
 </script>

@@ -134,7 +134,9 @@ export async function getProjects(): Promise<ProjectData[]> {
             id: p.id,
             wide: p.is_wide,
             image: p.image_url,
-            gallery: p.gallery || []
+            gallery: p.gallery || [],
+            views: p.views || 0,
+            youtubeUrl: p.youtube_url || null
         }));
     } catch {
         return [];

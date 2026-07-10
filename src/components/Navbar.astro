@@ -7,17 +7,17 @@ const waNumber = cleanWhatsAppNumber(contactData.phone);
 const siteLogo = await getSiteLogo();
 
 const navLinks = [
-  { href: '#sobre-mi', label: 'Sobre Mí' },
-  { href: '#servicios', label: 'Servicios' },
-  { href: '#portfolio', label: 'Proyectos' },
-  { href: '#contacto', label: 'Contacto' },
+  { href: '/#sobre-mi', label: 'Sobre Mí' },
+  { href: '/#servicios', label: 'Servicios' },
+  { href: '/#portfolio', label: 'Proyectos' },
+  { href: '/#contacto', label: 'Contacto' },
 ];
 ---
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 lg:px-20 py-4 md:py-6 transition-[padding,background-color,box-shadow,border-color] duration-500">
   <div class="max-w-7xl mx-auto flex items-center justify-between relative z-[110]">
     
     <!-- Logo -->
-    <a href="#inicio" id="nav-logo" class="flex items-center gap-3 group transition-all duration-500">
+    <a href="/" data-astro-prefetch id="nav-logo" class="flex items-center gap-3 group transition-all duration-500">
       <div class="w-14 h-14 md:w-20 md:h-20 flex items-center justify-center group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl">
         {siteLogo ? (
           <img src={siteLogo} alt="Logo" class="w-full h-full object-contain logo-img" id="main-logo" />
@@ -38,7 +38,7 @@ const navLinks = [
       <ul class="flex items-center gap-8">
          {navLinks.map((link) => (
            <li>
-             <a href={link.href} class="text-[11px] font-black text-[#567C8D] hover:text-[#1C2B3A] uppercase tracking-[0.25em] transition-all relative group py-2">
+             <a href={link.href} data-astro-prefetch class="text-[11px] font-black text-[#567C8D] hover:text-[#1C2B3A] uppercase tracking-[0.25em] transition-all relative group py-2">
                {link.label}
                <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#1C2B3A] group-hover:w-full transition-all duration-500 rounded-full"></div>
              </a>

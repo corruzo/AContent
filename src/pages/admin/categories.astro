@@ -1,0 +1,213 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Gestionar Categorías - Anais Content">
+  <main class="min-h-screen bg-[#F5EFEB] pt-32 pb-20 px-6">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between items-center mb-12">
+        <a href="/admin/dashboard" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#567C8D] hover:text-[#1C2B3A] transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Dashboard
+        </a>
+        <h1 class="font-display text-3xl font-bold text-[#1C2B3A] hidden md:block">Categorías</h1>
+        <div class="w-32"></div>
+      </div>
+
+      <!-- Add New Category -->
+      <div class="bg-white p-8 rounded-[40px] shadow-xl mb-8">
+        <h2 class="font-display text-xl font-bold text-[#1C2B3A] mb-6">Nueva Categoría</h2>
+        <form id="add-category-form" class="flex gap-4">
+          <input
+            type="text"
+            id="new-category-name"
+            placeholder="Ej: Luxury, Residencial, Airbnb..."
+            class="flex-grow bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] placeholder:text-[#567C8D]/40 focus:outline-none focus:ring-2 focus:ring-[#567C8D]/30"
+            required
+          />
+          <button
+            type="submit"
+            class="bg-[#1C2B3A] text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-[0.15em] text-[10px] hover:bg-[#567C8D] transition-all shadow-xl active:scale-95 whitespace-nowrap"
+          >
+            + Añadir
+          </button>
+        </form>
+        <div id="add-feedback" class="hidden mt-4 text-xs font-bold uppercase tracking-widest text-center py-3 rounded-xl"></div>
+      </div>
+
+      <!-- Categories List -->
+      <div class="bg-white p-8 rounded-[40px] shadow-xl">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="font-display text-xl font-bold text-[#1C2B3A]">Categorías Existentes</h2>
+          <div id="cat-spinner" class="w-5 h-5 border-2 border-[#567C8D] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+
+        <div id="categories-list" class="space-y-3 opacity-0 transition-opacity duration-500">
+          <!-- Loaded via JS -->
+        </div>
+
+        <div id="empty-cats" class="hidden py-12 text-center">
+          <p class="text-[#567C8D] font-bold text-xs uppercase tracking-widest">No hay categorías aún. ¡Crea la primera!</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="fixed inset-0 bg-[#1C2B3A]/80 backdrop-blur-sm z-50 hidden items-center justify-center p-6">
+    <div class="bg-white rounded-[40px] max-w-md w-full p-10 shadow-2xl">
+      <h2 class="font-display text-2xl font-bold text-[#1C2B3A] mb-6">Editar Categoría</h2>
+      <input type="hidden" id="edit-category-id" />
+      <input
+        type="text"
+        id="edit-category-name"
+        class="w-full bg-[#F5EFEB] border-none rounded-2xl px-6 py-4 text-[#1C2B3A] mb-6 focus:outline-none focus:ring-2 focus:ring-[#567C8D]/30"
+      />
+      <div class="flex gap-4">
+        <button id="save-edit-btn" class="flex-grow bg-[#1C2B3A] text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-[#567C8D] transition-all">
+          Guardar
+        </button>
+        <button id="cancel-edit-btn" class="px-8 py-4 rounded-2xl border-2 border-[#1C2B3A]/20 text-[#1C2B3A] font-bold uppercase tracking-widest text-[10px] hover:border-[#1C2B3A] transition-all">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const checkAuth = () => {
+    if (sessionStorage.getItem('admin_access') !== 'true') {
+      window.location.href = '/admin';
+      return false;
+    }
+    return true;
+  };
+
+  if (checkAuth()) {
+    const listEl       = document.getElementById('categories-list');
+    const spinner      = document.getElementById('cat-spinner');
+    const emptyEl      = document.getElementById('empty-cats');
+    const addForm      = document.getElementById('add-category-form') as HTMLFormElement;
+    const addFeedback  = document.getElementById('add-feedback');
+    const editModal    = document.getElementById('edit-modal');
+    const editIdInput  = document.getElementById('edit-category-id') as HTMLInputElement;
+    const editNameInput = document.getElementById('edit-category-name') as HTMLInputElement;
+
+    async function loadCategories() {
+      if (!listEl) return;
+      listEl.classList.add('opacity-0');
+      if (spinner) spinner.classList.remove('hidden');
+
+      const { data, error } = await supabase.from('categories').select('*').order('name');
+
+      if (spinner) spinner.classList.add('hidden');
+
+      if (error || !data || data.length === 0) {
+        emptyEl?.classList.remove('hidden');
+        listEl.innerHTML = '';
+        listEl.classList.remove('opacity-0');
+        return;
+      }
+
+      emptyEl?.classList.add('hidden');
+
+      listEl.innerHTML = data.map((cat: any) => `
+        <div class="flex items-center justify-between p-5 rounded-2xl border-2 border-[#F5EFEB] hover:border-[#567C8D]/20 transition-all group">
+          <div class="flex items-center gap-4">
+            <div class="w-2 h-2 rounded-full bg-[#567C8D]"></div>
+            <span class="font-bold text-[#1C2B3A] text-base">${cat.name}</span>
+          </div>
+          <div class="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              class="edit-cat-btn p-2.5 rounded-xl bg-[#F5EFEB] text-[#1C2B3A] hover:bg-[#1C2B3A] hover:text-white transition-all"
+              data-id="${cat.id}" data-name="${cat.name}" title="Editar"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button
+              class="delete-cat-btn p-2.5 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all"
+              data-id="${cat.id}" data-name="${cat.name}" title="Eliminar"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      listEl.classList.remove('opacity-0');
+
+      // Edit
+      document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const b = btn as HTMLButtonElement;
+          editIdInput.value = b.dataset.id!;
+          editNameInput.value = b.dataset.name!;
+          editModal?.classList.remove('hidden');
+          editModal?.classList.add('flex');
+          editNameInput.focus();
+        });
+      });
+
+      // Delete
+      document.querySelectorAll('.delete-cat-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const b = btn as HTMLButtonElement;
+          if (!confirm(`¿Eliminar la categoría "${b.dataset.name}"? Los proyectos que la usen quedarán sin categoría.`)) return;
+          const { error } = await supabase.from('categories').delete().eq('id', b.dataset.id!);
+          if (!error) loadCategories();
+          else alert('Error al eliminar: ' + error.message);
+        });
+      });
+    }
+
+    // Add
+    addForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('new-category-name') as HTMLInputElement;
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      const { error } = await supabase.from('categories').insert([{ name }]);
+      if (addFeedback) {
+        if (!error) {
+          addFeedback.textContent = `✓ Categoría "${name}" creada`;
+          addFeedback.className = 'mt-4 text-xs font-bold uppercase tracking-widest text-center py-3 rounded-xl bg-emerald-50 text-emerald-600';
+          nameInput.value = '';
+          loadCategories();
+        } else {
+          addFeedback.textContent = error.message.includes('unique') ? 'Esa categoría ya existe' : 'Error: ' + error.message;
+          addFeedback.className = 'mt-4 text-xs font-bold uppercase tracking-widest text-center py-3 rounded-xl bg-red-50 text-red-500';
+        }
+        addFeedback.classList.remove('hidden');
+        setTimeout(() => addFeedback.classList.add('hidden'), 3500);
+      }
+    });
+
+    // Save Edit
+    document.getElementById('save-edit-btn')?.addEventListener('click', async () => {
+      const id   = editIdInput.value;
+      const name = editNameInput.value.trim();
+      if (!id || !name) return;
+
+      const { error } = await supabase.from('categories').update({ name }).eq('id', id);
+      if (!error) {
+        editModal?.classList.add('hidden');
+        editModal?.classList.remove('flex');
+        loadCategories();
+      } else {
+        alert('Error al editar: ' + error.message);
+      }
+    });
+
+    // Cancel Edit
+    document.getElementById('cancel-edit-btn')?.addEventListener('click', () => {
+      editModal?.classList.add('hidden');
+      editModal?.classList.remove('flex');
+    });
+
+    loadCategories();
+  }
+</script>

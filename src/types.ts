@@ -45,6 +45,7 @@ export interface ServiceData {
 }
 
 export interface ProjectData {
+    id: string;
     title: string;
     category: string;
     location: string;
@@ -53,6 +54,8 @@ export interface ProjectData {
     wide?: boolean;
     image?: string;
     gallery?: string[];
+    views?: number;
+    youtubeUrl?: string;
 }
 
 export interface PartnerData {

@@ -1,18 +1,40 @@
 ---
 import { Image, getImage } from 'astro:assets';
-import { getAboutData, getSiteData } from '../utils/data';
+import { getAboutData, getSiteData, getProjects, normalizeAssetPath } from '../utils/data';
 const aboutData = await getAboutData();
 const siteData  = await getSiteData();
+const projects  = await getProjects();
 
 const imagesAbout = import.meta.glob<{ default: ImageMetadata }>('../assets/about/**/*.{jpeg,jpg,png,webp,svg,JPG,JPEG,PNG,WEBP,SVG}', { eager: true });
+const portfolioAssets = import.meta.glob<{ default: ImageMetadata }>('../assets/portfolio/**/*.{jpeg,jpg,png,webp,svg,JPG,JPEG,PNG,WEBP,SVG}', { eager: true });
 
-const rawGallery     = (aboutData.gallery || []).slice(0, 15);
+// Extraer solo las imágenes de portada de los proyectos
+const coverImages = projects.map(p => p.image).filter(Boolean);
+
+// Eliminar duplicados y mezclar de forma aleatoria
+const uniqueImages = [...new Set(coverImages)];
+const randomGallery = uniqueImages.sort(() => Math.random() - 0.5).slice(0, 5);
+
+// Usar las aleatorias, o caer al fallback de aboutData si no hay proyectos
+const rawGallery = randomGallery.length > 0 ? randomGallery : (aboutData.gallery || []).slice(0, 5);
+
 const filteredGallery = rawGallery.map(url => {
   if (!url) return null;
   if (url.startsWith('http')) return { asset: url, optimizedSrc: url };
-  const nPath = url.replace(/^\.\.\/\.\.\//, '../').replace(/^\.\.\//, '../');
-  const key   = Object.keys(imagesAbout).find(k => k.toLowerCase().includes(nPath.toLowerCase()));
-  const asset = key ? imagesAbout[key].default : null;
+  
+  const nPath = normalizeAssetPath(url);
+  
+  // Buscar en portfolio assets
+  let key = Object.keys(portfolioAssets).find(k => k.toLowerCase() === nPath.toLowerCase());
+  let asset = key ? portfolioAssets[key].default : null;
+  
+  // Si no está en portfolio, buscar en about assets (fallback)
+  if (!asset) {
+    const nPathAbout = url.replace(/^\.\.\/\.\.\//, '../').replace(/^\.\.\//, '../');
+    key = Object.keys(imagesAbout).find(k => k.toLowerCase().includes(nPathAbout.toLowerCase()));
+    asset = key ? imagesAbout[key].default : null;
+  }
+  
   return asset ? { asset, optimizedSrc: asset.src } : null;
 }).filter(Boolean);
 

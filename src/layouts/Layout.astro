@@ -21,7 +21,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
 <!doctype html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
   <head>
     <script is:inline>
       // Force JS-enabled class
@@ -89,6 +89,11 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     <ClientRouter />
   </head>
   <body class="bg-white text-[#1C2B3A] antialiased">
+
+    <!-- ── CUSTOM CURSOR ── -->
+    <div id="cursor-dot" aria-hidden="true"></div>
+    <div id="cursor-ring" aria-hidden="true"></div>
+
     <slot />
 
     <style is:global>
@@ -101,8 +106,37 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         --color-text: #2F4156;
       }
 
+      /* ── SMOOTH SCROLL ── */
+      html {
+        scroll-behavior: auto; /* Manejado por JS para suavidad personalizada */
+      }
+
+      /* ── SCROLLBAR ELEGANTE ── */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(86, 124, 141, 0.4);
+        border-radius: 100px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(86, 124, 141, 0.7);
+      }
+      * { scrollbar-width: thin; scrollbar-color: rgba(86,124,141,0.4) transparent; }
+
       body {
         font-family: 'Outfit', sans-serif;
+        /* Ocultar cursor nativo en desktop */
+        cursor: none;
+      }
+
+      /* Restaurar cursor en móvil/touch */
+      @media (pointer: coarse) {
+        body { cursor: auto; }
+        #cursor-dot, #cursor-ring { display: none !important; }
       }
 
       .font-display {
@@ -114,6 +148,70 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         unicode-bidi: isolate;
       }
 
+      /* ── CUSTOM CURSOR ── */
+      #cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 6px;
+        background: var(--color-primary);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99999;
+        transform: translate(-50%, -50%);
+        transition: transform 0.08s ease, opacity 0.3s ease, background-color 0.3s ease, width 0.3s ease, height 0.3s ease;
+        will-change: transform;
+        opacity: 0;
+      }
+
+      #cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 36px;
+        height: 36px;
+        border: 1.5px solid rgba(86, 124, 141, 0.5);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 99998;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                    height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                    border-color 0.3s ease,
+                    opacity 0.3s ease,
+                    background 0.4s ease;
+        will-change: transform;
+        opacity: 0;
+      }
+
+      /* Estado hover sobre links y botones */
+      body.cursor-hover #cursor-ring {
+        width: 56px;
+        height: 56px;
+        border-color: rgba(86, 124, 141, 0.8);
+        background: rgba(86, 124, 141, 0.06);
+      }
+
+      body.cursor-hover #cursor-dot {
+        width: 4px;
+        height: 4px;
+        background: var(--color-secondary);
+      }
+
+      /* Estado sobre texto clickeable */
+      body.cursor-text #cursor-ring {
+        width: 4px;
+        height: 32px;
+        border-radius: 2px;
+        border-color: var(--color-primary);
+      }
+
+      body.cursor-text #cursor-dot {
+        opacity: 0;
+      }
+
+      /* ── REVEAL ANIMATIONS ── */
       .js-enabled .reveal {
         opacity: 0;
         transform: translateY(20px);
@@ -124,6 +222,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         transform: translateY(0) !important;
       }
 
+      /* ── SKELETON ── */
       .skeleton {
         background-color: #e2e8f0;
         background-image: linear-gradient(90deg, #e2e8f0, #f8fafc, #e2e8f0);
@@ -141,12 +240,205 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         0% { background-position: -200px 0; }
         100% { background-position: calc(200px + 100%) 0; }
       }
+
+      /* ── ULTRA-WIDE SCREEN CONSTRAINTS ── */
+      /* Limita el ancho máximo de contenido en pantallas muy grandes */
+      @media (min-width: 1920px) {
+        .max-w-7xl {
+          max-width: 1400px;
+        }
+
+        /* Escala el texto en pantallas ultra-anchas */
+        html {
+          font-size: clamp(14px, 0.85vw, 18px);
+        }
+      }
+
+      @media (min-width: 2560px) {
+        html {
+          font-size: clamp(14px, 0.7vw, 20px);
+        }
+      }
+
+      /* Pantallas muy altas (portrait ultra-tall) */
+      @media (min-height: 1200px) and (max-width: 1024px) {
+        section {
+          padding-top: 5rem;
+          padding-bottom: 5rem;
+        }
+      }
     </style>
 
     <script is:inline define:vars={{ supabaseUrl, supabaseKey }}>
       (function() {
+
+        // ── SMOOTH SCROLL (Interpolación física tipo Lenis) ──
+        const initSmoothScroll = () => {
+          // Solo en dispositivos con mouse (no touch)
+          if (window.matchMedia('(pointer: coarse)').matches) return;
+
+          let currentY = window.scrollY;
+          let targetY  = window.scrollY;
+          let rafId    = null;
+          let isScrolling = false;
+          const LERP  = 0.09; // Factor de interpolación (0.06 = muy suave, 0.15 = más reactivo)
+          const THRESHOLD = 0.3;
+
+          const onWheel = (e) => {
+            e.preventDefault();
+            // Velocidad ajustada según la magnitud del delta
+            const speed = Math.abs(e.deltaY) > 100 ? 1.4 : 1.0;
+            targetY = Math.max(0, Math.min(
+              document.documentElement.scrollHeight - window.innerHeight,
+              targetY + e.deltaY * speed
+            ));
+            if (!isScrolling) {
+              isScrolling = true;
+              raf();
+            }
+          };
+
+          const raf = () => {
+            currentY += (targetY - currentY) * LERP;
+            if (Math.abs(targetY - currentY) < THRESHOLD) {
+              currentY = targetY;
+              window.scrollTo(0, currentY);
+              isScrolling = false;
+              return;
+            }
+            window.scrollTo(0, currentY);
+            rafId = requestAnimationFrame(raf);
+          };
+
+          // Scroll suave para anclas (links internos)
+          const onAnchorClick = (e) => {
+            const anchor = e.target.closest('a[href^="#"], a[href^="/#"]');
+            if (!anchor) return;
+            
+            const href = anchor.getAttribute('href');
+            const isRootLink = href.startsWith('/#');
+            const targetId = isRootLink ? href.slice(2) : href.slice(1);
+            
+            // Si es un link /# y NO estamos en la pagina principal, dejalo navegar normalmente
+            if (isRootLink && window.location.pathname !== '/') {
+              return; // Browser will navigate to /#section
+            }
+
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            
+            e.preventDefault();
+            const navH = document.getElementById('navbar')?.offsetHeight || 0;
+            targetY = Math.max(0,
+              el.getBoundingClientRect().top + window.scrollY - navH
+            );
+            if (!isScrolling) { isScrolling = true; raf(); }
+          };
+
+          // Limpiar listeners anteriores antes de agregar
+          window.removeEventListener('wheel', window._smoothWheelFn, { passive: false });
+          document.removeEventListener('click', window._smoothAnchorFn);
+
+          window._smoothWheelFn  = onWheel;
+          window._smoothAnchorFn = onAnchorClick;
+
+          window.addEventListener('wheel', onWheel, { passive: false });
+          document.addEventListener('click', onAnchorClick);
+
+          // Sincronizar targetY si el scroll cambia por otro medio (teclado, barra, etc.)
+          window.addEventListener('scroll', () => {
+            if (!isScrolling) {
+              currentY = window.scrollY;
+              targetY  = window.scrollY;
+            }
+          }, { passive: true });
+        };
+
+        // ── CUSTOM CURSOR ──
+        const initCursor = () => {
+          if (window.matchMedia('(pointer: coarse)').matches) return;
+
+          const dot  = document.getElementById('cursor-dot');
+          const ring = document.getElementById('cursor-ring');
+          if (!dot || !ring) return;
+
+          let ringX = 0, ringY = 0;
+          let mouseX = 0, mouseY = 0;
+          let rafCursor = null;
+
+          const RING_LERP = 0.13;
+
+          const moveCursor = (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // El dot sigue exactamente al mouse
+            dot.style.left = mouseX + 'px';
+            dot.style.top  = mouseY + 'px';
+
+            if (!rafCursor) rafCursor = requestAnimationFrame(animateRing);
+          };
+
+          const animateRing = () => {
+            ringX += (mouseX - ringX) * RING_LERP;
+            ringY += (mouseY - ringY) * RING_LERP;
+            ring.style.left = ringX + 'px';
+            ring.style.top  = ringY + 'px';
+
+            const dx = Math.abs(mouseX - ringX);
+            const dy = Math.abs(mouseY - ringY);
+            if (dx > 0.1 || dy > 0.1) {
+              rafCursor = requestAnimationFrame(animateRing);
+            } else {
+              rafCursor = null;
+            }
+          };
+
+          // Mostrar al entrar, ocultar al salir
+          document.addEventListener('mouseenter', () => {
+            dot.style.opacity  = '1';
+            ring.style.opacity = '1';
+          });
+          document.addEventListener('mouseleave', () => {
+            dot.style.opacity  = '0';
+            ring.style.opacity = '0';
+          });
+
+          document.addEventListener('mousemove', (e) => {
+            moveCursor(e);
+            dot.style.opacity  = '1';
+            ring.style.opacity = '1';
+          });
+
+          // Estados especiales
+          const interactiveSelectors = 'a, button, [role="button"], label, input, select, textarea, .about-photo-card, [data-cursor-hover]';
+          const textSelectors = 'p, h1, h2, h3, h4, h5, h6, span, li';
+
+          document.addEventListener('mouseover', (e) => {
+            if (e.target.closest(interactiveSelectors)) {
+              document.body.classList.add('cursor-hover');
+              document.body.classList.remove('cursor-text');
+            } else if (e.target.closest(textSelectors)) {
+              document.body.classList.add('cursor-text');
+              document.body.classList.remove('cursor-hover');
+            } else {
+              document.body.classList.remove('cursor-hover', 'cursor-text');
+            }
+          });
+
+          // Click feedback
+          document.addEventListener('mousedown', () => {
+            dot.style.transform  = 'translate(-50%, -50%) scale(1.8)';
+            ring.style.transform = 'translate(-50%, -50%) scale(0.75)';
+          });
+          document.addEventListener('mouseup', () => {
+            dot.style.transform  = 'translate(-50%, -50%) scale(1)';
+            ring.style.transform = 'translate(-50%, -50%) scale(1)';
+          });
+        };
+
+        // ── REVEAL ANIMATIONS ──
         const init = () => {
-          // Reveal Animations
           const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
               if (entry.isIntersecting) {
@@ -158,19 +450,16 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         };
 
-        // Anonymous Analytics Tracking via Supabase REST API
+        // ── ANALYTICS ──
         const trackVisit = async () => {
           if (window.location.pathname.startsWith('/admin')) return;
           if (!supabaseUrl || supabaseUrl.includes('placeholder')) return;
           try {
-            // Generate or retrieve session ID
             let sessionId = sessionStorage.getItem('_sid');
             if (!sessionId) {
               sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
               sessionStorage.setItem('_sid', sessionId);
             }
-
-            // Evitar conteo duplicado por recarga o navegación interna
             const trackKey = '_tracked_' + window.location.pathname;
             if (sessionStorage.getItem(trackKey)) return;
             sessionStorage.setItem(trackKey, 'true');
@@ -189,14 +478,23 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                 visitor_info: { referrer: document.referrer, lang: navigator.language }
               })
             });
-          } catch (e) {
-            // Fail silently - analytics should never break the site
-          }
+          } catch (e) { /* Fail silently */ }
         };
 
+        // ── INIT ──
         init();
         trackVisit();
-        document.addEventListener('astro:page-load', init);
+        initSmoothScroll();
+        initCursor();
+
+        document.addEventListener('astro:page-load', () => {
+          if (!window.location.hash) {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          }
+          init();
+          initSmoothScroll();
+          initCursor();
+        });
       })();
     </script>
   </body>
