@@ -186,236 +186,396 @@ const hasMore = totalProjects > FEATURED_COUNT;
   </div>
 </section>
 
-<!-- ── LIGHTBOX MODAL ── -->
-<div id="portfolio-modal" class="fixed inset-0 z-[1000] flex items-center justify-center bg-[#1C2B3A] opacity-0 invisible pointer-events-none transition-all duration-500 overflow-hidden" aria-modal="true" role="dialog">
+<!-- ── LIGHTBOX MODAL — Premium Brand Design ── -->
+<div
+  id="home-portfolio-modal"
+  class="fixed inset-0 z-[1000] opacity-0 invisible pointer-events-none transition-opacity duration-500 overflow-hidden"
+  aria-modal="true"
+  role="dialog"
+  aria-label="Galería de imágenes"
+>
+  <!-- Dark backdrop -->
+  <div class="absolute inset-0 bg-[#060e14] backdrop-blur-2xl"></div>
 
-  <div class="absolute inset-0 bg-[#1C2B3A]/95 backdrop-blur-2xl"></div>
-
-  <div class="absolute top-6 left-6 md:top-10 md:left-20 z-[1020] text-white">
-    <span id="gallery-counter" class="text-[#C8D9E6] font-display text-2xl md:text-4xl font-black italic block mb-1 md:mb-2 text-shadow-lg">1 / 1</span>
-    <h4 id="gallery-title" class="text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] opacity-80">PROYECTO</h4>
+  <!-- ── TOP BAR ── -->
+  <div class="absolute top-0 left-0 right-0 z-[1030] flex items-center justify-between px-6 md:px-14 py-5 border-b border-white/5 bg-gradient-to-b from-black/30 to-transparent">
+    <div>
+      <p id="home-gallery-title" class="text-[10px] font-black uppercase tracking-[0.35em] text-[#C8D9E6]/50 mb-0.5 truncate max-w-xs md:max-w-md">Proyecto</p>
+      <span id="home-gallery-counter" class="text-white font-display text-xl font-bold">1 / 1</span>
+    </div>
+    <button
+      id="home-modal-close"
+      aria-label="Cerrar galería"
+      class="w-11 h-11 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/15 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90"
+    >
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
 
-  <button id="modal-close" aria-label="Cerrar galería" class="absolute top-6 right-6 md:top-10 md:right-20 text-white hover:text-[#C8D9E6] transition-all bg-white/10 hover:bg-white/20 rounded-full p-4 md:p-5 z-[1030] backdrop-blur-md border border-white/10 active:scale-90 shadow-2xl">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-    </svg>
+  <!-- ── NAV ARROWS ── -->
+  <button
+    id="home-prev-btn"
+    aria-label="Imagen anterior"
+    class="absolute left-3 md:left-7 top-1/2 -translate-y-1/2 z-[1020] w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/18 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90 group"
+  >
+    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <button
+    id="home-next-btn"
+    aria-label="Imagen siguiente"
+    class="absolute right-3 md:right-7 top-1/2 -translate-y-1/2 z-[1020] w-11 h-11 md:w-13 md:h-13 flex items-center justify-center rounded-full bg-white/8 hover:bg-white/18 border border-white/10 text-white/60 hover:text-white transition-all duration-300 active:scale-90 group"
+  >
+    <svg class="w-5 h-5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
   </button>
 
-  <button id="prev-btn" class="absolute left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/50 hover:text-white hover:scale-110 transition-all z-[1020] p-4 group">
-    <svg class="w-8 h-8 md:w-12 md:h-12 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-  </button>
-  <button id="next-btn" class="absolute right-2 md:right-12 top-1/2 -translate-y-1/2 text-white/50 hover:text-white hover:scale-110 transition-all z-[1020] p-4 group">
-    <svg class="w-8 h-8 md:w-12 md:h-12 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-  </button>
+  <!-- ── MAIN CONTENT ── -->
+  <div id="home-modal-content-wrapper" class="absolute inset-0 flex items-center justify-center pt-20 pb-32 px-16 md:px-24 z-[1010]">
 
-  <div class="relative w-full h-full flex items-center justify-center p-4 md:p-12 z-[1010] pointer-events-none" id="modal-content-wrapper">
-    <div id="modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 invisible transition-all duration-300 z-[1050] pointer-events-none">
-      <div class="flex flex-col items-center gap-6">
-        <div class="relative">
-          <div class="w-16 h-16 border-4 border-white/10 border-t-white rounded-full animate-spin"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-2 h-2 bg-white rounded-full animate-ping"></div>
-          </div>
-        </div>
-        <div class="text-center">
-          <span class="block text-[11px] font-black uppercase tracking-[0.5em] text-white animate-pulse mb-1">Anais Content</span>
-          <span class="text-[8px] font-bold uppercase tracking-[0.3em] text-white/40">Cargando Galería...</span>
-        </div>
+    <!-- Loading spinner -->
+    <div id="home-modal-spinner" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-[1050]">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-10 h-10 border-2 border-white/10 border-t-[#C8D9E6] rounded-full animate-spin"></div>
+        <span class="text-[10px] font-black uppercase tracking-[0.5em] text-white/30">Cargando</span>
       </div>
     </div>
-    <img id="modal-image" src="" alt="Vista previa de galería"
-      style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateX(12px);box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;pointer-events:auto;display:none;" />
-    
-    <video id="modal-video" src="" autoplay loop muted playsinline 
-      style="max-width:100%;max-height:85vh;width:auto;height:auto;object-fit:contain;transition:opacity 0.25s ease,transform 0.25s ease;opacity:0;transform:translateX(12px);box-shadow:0 30px 60px rgba(0,0,0,0.9);border-radius:2px;pointer-events:auto;display:none;"></video>
-    
-    <div id="youtube-overlay" class="absolute inset-0 bg-[#1C2B3A]/90 z-[1060] hidden flex-col items-center justify-center pointer-events-auto backdrop-blur-sm transition-opacity duration-500 opacity-0">
-        <h3 class="text-white font-display text-3xl font-bold mb-6 text-center px-4">Continúa viendo en YouTube</h3>
-        <a id="youtube-link" href="#" target="_blank" class="bg-red-600 text-white font-black uppercase tracking-widest text-xs px-8 py-4 rounded-full flex items-center gap-3 hover:bg-red-700 hover:scale-105 transition-all shadow-red-600/30 shadow-2xl">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-            Ver Video Completo
+
+    <!-- Error state -->
+    <div id="home-modal-error" class="hidden flex-col items-center gap-4 text-center">
+      <svg class="w-12 h-12 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <p class="text-white/30 text-sm font-bold uppercase tracking-widest">Imagen no disponible</p>
+    </div>
+
+    <!-- Main image -->
+    <img
+      id="home-modal-image"
+      src=""
+      alt="Vista previa del proyecto"
+      class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl hidden opacity-0 transition-all duration-300 select-none"
+      style="box-shadow:0 40px 80px rgba(0,0,0,0.7); max-height: calc(100vh - 210px);"
+      draggable="false"
+    />
+
+    <!-- Video -->
+    <video
+      id="home-modal-video"
+      src=""
+      autoplay
+      loop
+      muted
+      playsinline
+      class="max-w-full max-h-full w-auto h-auto object-contain rounded-xl hidden opacity-0 transition-all duration-300"
+      style="box-shadow:0 40px 80px rgba(0,0,0,0.7); max-height: calc(100vh - 210px);"
+    ></video>
+
+    <!-- YouTube overlay -->
+    <div id="home-youtube-overlay" class="absolute inset-0 hidden items-center justify-center flex-col z-[1060] bg-[#0D1B26]/92 backdrop-blur-md opacity-0 transition-opacity duration-500">
+      <div class="text-center px-8 max-w-sm">
+        <p class="text-[10px] font-black uppercase tracking-[0.4em] text-[#C8D9E6]/40 mb-3">Contenido externo</p>
+        <h3 class="text-white font-display text-2xl md:text-3xl font-bold mb-8 leading-tight">Continúa viendo en YouTube</h3>
+        <a
+          id="home-youtube-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-3 bg-red-600 text-white font-black uppercase tracking-widest text-[11px] px-8 py-4 rounded-full hover:bg-red-500 hover:scale-105 transition-all shadow-2xl shadow-red-900/30 active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+          Ver Video Completo
         </a>
+      </div>
     </div>
   </div>
+
+  <!-- ── THUMBNAIL STRIP ── -->
+  <div class="absolute bottom-0 left-0 right-0 z-[1020] pb-5 pt-4 px-6 bg-gradient-to-t from-black/50 to-transparent">
+    <div id="home-thumbnail-strip" class="flex items-center justify-center gap-2 overflow-x-auto max-w-2xl mx-auto" style="scrollbar-width:none;-ms-overflow-style:none;"></div>
+  </div>
 </div>
+
+<style>
+  #home-thumbnail-strip::-webkit-scrollbar { display: none; }
+  .lb-thumb { flex-shrink:0; width:50px; height:36px; border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:all 0.2s ease; opacity:0.4; }
+  .lb-thumb:hover { opacity:0.75; transform:scale(1.06); }
+  .lb-thumb.active { border-color:#C8D9E6; opacity:1; transform:scale(1.1); }
+  .lb-thumb img, .lb-thumb video { width:100%; height:100%; object-fit:cover; }
+  @keyframes lb-in { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  #home-portfolio-modal:not(.invisible) { animation: lb-in 0.35s ease forwards; }
+</style>
 
 <script>
 import { supabase } from '../lib/supabase';
 
 (function () {
-  let gallery = [];
-  let idx     = 0;
-  let title   = '';
-  let keyFn   = null;
-  let ytUrl   = '';
-  let ytTimer = null;
-  
-  const getEl = (id) => document.getElementById(id);
+  'use strict';
 
-  const resetOverlay = () => {
-    const overlay = getEl('youtube-overlay');
-    if (overlay) {
-      overlay.classList.add('hidden', 'opacity-0');
-      overlay.classList.remove('flex');
-    }
-    if (ytTimer) {
-      clearTimeout(ytTimer);
-      ytTimer = null;
-    }
+  // ─── Security helpers ────────────────────────────────────────────────
+  const $ = (id: string): HTMLElement | null => document.getElementById(id);
+
+  const sanitizeText = (s: string): string =>
+    String(s || '').slice(0, 500).replace(/[<>&"']/g, c =>
+      ({ '<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;', "'":'&#39;' }[c] || c));
+
+  const isValidSrc = (url: string): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    if (url.startsWith('/') || url.startsWith('./') || url.startsWith('/_')) return true;
+    try {
+      const u = new URL(url);
+      return ['http:', 'https:'].includes(u.protocol);
+    } catch { return false; }
   };
 
-  const setImage = (newIdx) => {
-    resetOverlay();
-    
-    const img = getEl('modal-image');
-    const vid = getEl('modal-video');
-    if (!img || !vid || !gallery.length) return;
-    
-    idx = (newIdx + gallery.length) % gallery.length;
-    const currentUrl = gallery[idx];
-    const isVideo = currentUrl.match(/\.(mp4|webm|ogg)$/i);
+  const isVideoUrl = (url: string): boolean => /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
 
-    img.style.opacity = '0';
-    img.style.transform = 'translateX(12px)';
+  // ─── State ────────────────────────────────────────────────────────────
+  // Lightbox
+  let gallery: string[] = [];
+  let lbIdx = 0;
+  let lbTitle = '';
+  let lbYtUrl = '';
+  let ytTimer: ReturnType<typeof setTimeout> | null = null;
+  let kbFn: ((e: KeyboardEvent) => void) | null = null;
+  let touchX0 = 0, touchY0 = 0;
+
+  // ─── Lightbox helpers ────────────────────────────────────────────────
+  const resetYT = () => {
+    if (ytTimer) { clearTimeout(ytTimer); ytTimer = null; }
+    const ov = $('home-youtube-overlay');
+    if (!ov) return;
+    ov.classList.add('opacity-0');
+    setTimeout(() => { ov.classList.add('hidden'); ov.classList.remove('flex'); }, 300);
+  };
+
+  const showSpinner = (on: boolean) => {
+    const sp = $('home-modal-spinner');
+    if (sp) sp.classList.toggle('opacity-0', !on);
+  };
+
+  const showErrorState = (on: boolean) => {
+    const er = $('home-modal-error');
+    if (!er) return;
+    er.classList.toggle('hidden', !on);
+    er.classList.toggle('flex', on);
+  };
+
+  const rebuildThumbs = () => {
+    const strip = $('home-thumbnail-strip');
+    if (!strip) return;
+    strip.innerHTML = '';
+    gallery.forEach((url, i) => {
+      if (!isValidSrc(url)) return;
+      const wrap = document.createElement('div');
+      wrap.className = `lb-thumb${i === lbIdx ? ' active' : ''}`;
+      wrap.setAttribute('role', 'button');
+      wrap.setAttribute('aria-label', `Ver imagen ${i + 1}`);
+      wrap.setAttribute('tabindex', '0');
+      if (isVideoUrl(url)) {
+        const v = document.createElement('video');
+        v.src = url; v.muted = true; v.preload = 'metadata';
+        wrap.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url; img.alt = ''; img.loading = 'lazy';
+        img.onerror = () => { wrap.style.backgroundColor = '#1C2B3A'; };
+        wrap.appendChild(img);
+      }
+      wrap.onclick = () => lbGoto(i);
+      wrap.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); lbGoto(i); } };
+      strip.appendChild(wrap);
+    });
+  };
+
+  const syncThumbs = () => {
+    const strip = $('home-thumbnail-strip');
+    if (!strip) return;
+    strip.querySelectorAll('.lb-thumb').forEach((el, i) => el.classList.toggle('active', i === lbIdx));
+    const active = strip.querySelector('.lb-thumb.active') as HTMLElement | null;
+    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  };
+
+  const lbGoto = (newIdx: number) => {
+    resetYT();
+    if (!gallery.length) return;
+    const img = $('home-modal-image') as HTMLImageElement | null;
+    const vid = $('home-modal-video') as HTMLVideoElement | null;
+    if (!img || !vid) return;
+
+    lbIdx = ((newIdx % gallery.length) + gallery.length) % gallery.length;
+    const url = gallery[lbIdx];
+
+    // Update header
+    const counter = $('home-gallery-counter');
+    const titleEl = $('home-gallery-title');
+    if (counter) counter.textContent = `${lbIdx + 1} / ${gallery.length}`;
+    if (titleEl)  titleEl.textContent = sanitizeText(lbTitle);
+
+    if (!url || !isValidSrc(url)) { showSpinner(false); showErrorState(true); return; }
+    showErrorState(false);
+
+    // Fade out
+    img.style.opacity = '0'; img.style.transform = 'scale(0.97)';
     vid.style.opacity = '0';
-    vid.style.transform = 'translateX(12px)';
-    
-    img.style.display = isVideo ? 'none' : 'block';
-    vid.style.display = isVideo ? 'block' : 'none';
 
-    // Preload next image if not video
-    const nextIdx = (idx + 1) % gallery.length;
-    if (!gallery[nextIdx].match(/\.(mp4|webm|ogg)$/i)) {
-        new Image().src = gallery[nextIdx];
-    }
+    // Preload next
+    const ni = (lbIdx + 1) % gallery.length;
+    if (!isVideoUrl(gallery[ni]) && isValidSrc(gallery[ni])) new Image().src = gallery[ni];
 
-    const counter = getEl('gallery-counter');
-    const titleEl = getEl('gallery-title');
-    if (counter) counter.textContent = `${idx + 1} / ${gallery.length}`;
-    if (titleEl)  titleEl.textContent  = title;
+    syncThumbs();
 
-    const spinner = getEl('modal-spinner');
-    
-    const showTarget = (target) => {
-      target.style.opacity   = '1';
-      target.style.transform = 'translateX(0)';
-      if (spinner) spinner.classList.add('opacity-0', 'invisible');
-      
-      // Youtube 5s redirect logic
-      if (ytUrl) {
-          ytTimer = setTimeout(() => {
-              if (isVideo) vid.pause();
-              const overlay = getEl('youtube-overlay');
-              if (overlay) {
-                  getEl('youtube-link').href = ytUrl;
-                  overlay.classList.remove('hidden');
-                  overlay.classList.add('flex');
-                  setTimeout(() => overlay.classList.remove('opacity-0'), 50);
-              }
-          }, 5000);
+    const onReady = (target: HTMLElement) => {
+      showSpinner(false);
+      target.style.opacity = '1';
+      target.style.transform = 'scale(1)';
+
+      if (lbYtUrl) {
+        ytTimer = setTimeout(() => {
+          if (isVideoUrl(url)) vid.pause();
+          const ov = $('home-youtube-overlay');
+          const lnk = $('home-youtube-link') as HTMLAnchorElement | null;
+          if (ov && lnk) {
+            lnk.href = lbYtUrl;
+            ov.classList.remove('hidden');
+            ov.classList.add('flex');
+            requestAnimationFrame(() => ov.classList.remove('opacity-0'));
+          }
+        }, 5000);
       }
     };
 
-    if (isVideo) {
-      vid.src = currentUrl;
-      vid.onloadeddata = () => showTarget(vid);
-      vid.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); };
+    if (isVideoUrl(url)) {
+      img.classList.add('hidden'); vid.classList.remove('hidden');
+      showSpinner(true);
+      vid.src = url;
+      vid.onloadeddata = () => onReady(vid);
+      vid.onerror = () => { showSpinner(false); showErrorState(true); };
+      vid.load();
     } else {
-      img.onload  = () => showTarget(img);
-      img.onerror = () => { if (spinner) spinner.classList.add('opacity-0', 'invisible'); };
-      img.src = currentUrl;
-      if (img.complete && img.naturalWidth) showTarget(img);
-      else if (spinner) spinner.classList.remove('opacity-0', 'invisible');
+      vid.pause(); vid.src = ''; vid.classList.add('hidden');
+      img.classList.remove('hidden');
+      showSpinner(true);
+      const tmpImg = new Image();
+      tmpImg.onload = () => { img.src = url; onReady(img); };
+      tmpImg.onerror = () => { showSpinner(false); showErrorState(true); img.classList.add('hidden'); };
+      tmpImg.src = url;
     }
   };
 
-  const openModal = async (galleryJson, projectTitle, youtubeUrl, projectId) => {
+  const openLightbox = async (galleryJson: string, title: string, ytUrl: string, projectId: string) => {
     try {
-      gallery = JSON.parse(galleryJson || '[]');
-      title   = projectTitle || '';
-      ytUrl   = youtubeUrl || '';
-      
-      if (!gallery.length) return;
-      const modal = getEl('portfolio-modal');
+      let parsed: any[] = [];
+      try { parsed = JSON.parse(galleryJson || '[]'); } catch { parsed = []; }
+      if (!Array.isArray(parsed)) parsed = [];
+
+      gallery = parsed
+        .filter((u): u is string => typeof u === 'string')
+        .filter(isValidSrc)
+        .slice(0, 50); // max 50 images
+
+      if (!gallery.length) { console.warn('[Lightbox] No valid gallery images'); return; }
+
+      lbTitle  = String(title  || '').slice(0, 200);
+      lbYtUrl  = (typeof ytUrl === 'string' && ytUrl.startsWith('http')) ? ytUrl : '';
+      lbIdx    = 0;
+
+      const modal = $('home-portfolio-modal');
       if (!modal) return;
-      modal.classList.remove('opacity-0', 'pointer-events-none', 'invisible');
+
+      resetYT();
+      modal.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
       document.body.style.overflow = 'hidden';
-      setImage(0);
-      
+
+      rebuildThumbs();
+      lbGoto(0);
+
+      // Track view — fire and forget
       if (projectId) {
-          // Increment views silently
-          const pId = parseInt(projectId, 10);
-          if (!isNaN(pId)) {
-              await supabase.rpc('increment_views', { project_id: pId });
-          }
+        const pid = parseInt(projectId, 10);
+        if (Number.isFinite(pid) && pid > 0) {
+          supabase.rpc('increment_views', { project_id: pid }).catch(() => {});
+        }
       }
-    } catch (e) { console.error('Gallery open error', e); }
+    } catch (err) {
+      console.error('[Lightbox] openLightbox error:', err);
+    }
   };
 
-  const closeModal = () => {
-    resetOverlay();
-    const modal = getEl('portfolio-modal');
-    const img   = getEl('modal-image');
-    const vid   = getEl('modal-video');
+  const closeLightbox = () => {
+    resetYT();
+    const modal = $('home-portfolio-modal');
+    const img   = $('home-modal-image') as HTMLImageElement | null;
+    const vid   = $('home-modal-video') as HTMLVideoElement | null;
     if (!modal) return;
-    modal.classList.add('opacity-0', 'pointer-events-none', 'invisible');
+    modal.classList.add('opacity-0', 'invisible', 'pointer-events-none');
     document.body.style.overflow = '';
-    if (img) {
-      img.style.opacity   = '0';
-      img.style.transform = 'translateX(12px)';
-      img.src = '';
-      img.onload = null;
-    }
-    if (vid) {
-      vid.style.opacity = '0';
-      vid.style.transform = 'translateX(12px)';
-      vid.pause();
-      vid.src = '';
-    }
+    if (img) { img.style.opacity = '0'; img.src = ''; img.classList.add('hidden'); img.onload = null; img.onerror = null; }
+    if (vid) { vid.pause(); vid.src = ''; vid.classList.add('hidden'); vid.onloadeddata = null; vid.onerror = null; }
+    const strip = $('home-thumbnail-strip');
+    if (strip) strip.innerHTML = '';
+    gallery = []; lbTitle = ''; lbYtUrl = ''; lbIdx = 0;
   };
 
+  // ─── Init ─────────────────────────────────────────────────────────────
   const init = () => {
-    const modal    = getEl('portfolio-modal');
-    const closeBtn = getEl('modal-close');
-    const prevBtn  = getEl('prev-btn');
-    const nextBtn  = getEl('next-btn');
-    if (!modal) return;
+    // Lightbox buttons
+    const modal   = $('home-portfolio-modal');
+    const closeBtn= $('home-modal-close');
+    const prevLb  = $('home-prev-btn');
+    const nextLb  = $('home-next-btn');
 
-    document.querySelectorAll('.portfolio-item').forEach(item => {
-      item.onclick = () =>
-        openModal(
-            item.getAttribute('data-gallery'), 
-            item.getAttribute('data-title'),
-            item.getAttribute('data-youtube'),
-            item.getAttribute('data-id')
-        );
+    if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); closeLightbox(); };
+    if (prevLb)   prevLb.onclick   = (e) => { e.stopPropagation(); lbGoto(lbIdx - 1); };
+    if (nextLb)   nextLb.onclick   = (e) => { e.stopPropagation(); lbGoto(lbIdx + 1); };
+
+    if (modal) modal.onclick = (e) => {
+      const t = e.target as HTMLElement;
+      if (t === modal || t.id === 'home-modal-content-wrapper') closeLightbox();
+    };
+
+    // Card Clicks
+    document.querySelectorAll<HTMLElement>('.portfolio-item').forEach(card => {
+      card.onclick = () => openLightbox(
+        card.getAttribute('data-gallery') || '[]',
+        card.getAttribute('data-title')   || '',
+        card.getAttribute('data-youtube') || '',
+        card.getAttribute('data-id')      || ''
+      );
+      card.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.onclick?.(e as unknown as MouseEvent);
+        }
+      };
     });
 
-    if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); closeModal(); };
-    if (prevBtn)  prevBtn.onclick  = (e) => { e.stopPropagation(); setImage(idx - 1); };
-    if (nextBtn)  nextBtn.onclick  = (e) => { e.stopPropagation(); setImage(idx + 1); };
-
-    modal.onclick = (e) => {
-      if (e.target === modal || e.target.id === 'modal-content-wrapper') closeModal();
+    // Keyboard
+    if (kbFn) window.removeEventListener('keydown', kbFn);
+    kbFn = (e: KeyboardEvent) => {
+      const m = $('home-portfolio-modal');
+      if (!m || m.classList.contains('invisible')) return;
+      if (e.key === 'Escape')     { e.preventDefault(); closeLightbox(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); lbGoto(lbIdx + 1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lbGoto(lbIdx - 1); }
     };
+    window.addEventListener('keydown', kbFn);
 
-    if (keyFn) window.removeEventListener('keydown', keyFn);
-    keyFn = (e) => {
-      if (modal.classList.contains('pointer-events-none')) return;
-      if (e.key === 'Escape')     closeModal();
-      if (e.key === 'ArrowRight') setImage(idx + 1);
-      if (e.key === 'ArrowLeft')  setImage(idx - 1);
-    };
-    window.addEventListener('keydown', keyFn);
+    // Touch swipe
+    if (modal) {
+      modal.addEventListener('touchstart', (e: TouchEvent) => {
+        touchX0 = e.changedTouches[0].clientX;
+        touchY0 = e.changedTouches[0].clientY;
+      }, { passive: true });
+      modal.addEventListener('touchend', (e: TouchEvent) => {
+        const dx = e.changedTouches[0].clientX - touchX0;
+        const dy = e.changedTouches[0].clientY - touchY0;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 48) {
+          dx < 0 ? lbGoto(lbIdx + 1) : lbGoto(lbIdx - 1);
+        }
+      }, { passive: true });
+    }
   };
 
+  document.addEventListener('astro:page-load', init);
   init();
-  document.addEventListener('astro:page-load',  init);
-  document.addEventListener('astro:after-swap', init);
 })();
 </script>
-
-<style>
-  .text-shadow-lg { text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-</style>
