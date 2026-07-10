@@ -426,6 +426,7 @@ import { supabase } from '../lib/supabase';
 
   const isValidSrc = (url: string): boolean => {
     if (!url || typeof url !== 'string') return false;
+    if (url === '__YOUTUBE__') return true;
     if (url.startsWith('/') || url.startsWith('./') || url.startsWith('/_')) return true;
     try {
       const u = new URL(url);
@@ -483,7 +484,14 @@ import { supabase } from '../lib/supabase';
       wrap.setAttribute('role', 'button');
       wrap.setAttribute('aria-label', `Ver imagen ${i + 1}`);
       wrap.setAttribute('tabindex', '0');
-      if (isVideoUrl(url)) {
+      
+      if (url === '__YOUTUBE__') {
+        wrap.style.backgroundColor = '#DC2626'; // Red
+        wrap.style.display = 'flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.justifyContent = 'center';
+        wrap.innerHTML = `<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>`;
+      } else if (isVideoUrl(url)) {
         const v = document.createElement('video');
         v.src = url; v.muted = true; v.preload = 'metadata';
         wrap.appendChild(v);
@@ -529,10 +537,12 @@ import { supabase } from '../lib/supabase';
     // Fade out
     img.style.opacity = '0'; img.style.transform = 'scale(0.97)';
     vid.style.opacity = '0';
+    img.classList.add('hidden');
+    vid.classList.add('hidden');
 
     // Preload next
     const ni = (lbIdx + 1) % gallery.length;
-    if (!isVideoUrl(gallery[ni]) && isValidSrc(gallery[ni])) new Image().src = gallery[ni];
+    if (gallery[ni] !== '__YOUTUBE__' && !isVideoUrl(gallery[ni]) && isValidSrc(gallery[ni])) new Image().src = gallery[ni];
 
     syncThumbs();
 
@@ -541,7 +551,7 @@ import { supabase } from '../lib/supabase';
       target.style.opacity = '1';
       target.style.transform = 'scale(1)';
 
-      if (lbYtUrl) {
+      if (lbYtUrl && isVideoUrl(url)) { // ONLY FOR VIDEOS
         ytTimer = setTimeout(() => {
           if (isVideoUrl(url)) vid.pause();
           const ov = $('youtube-overlay');
@@ -556,15 +566,25 @@ import { supabase } from '../lib/supabase';
       }
     };
 
-    if (isVideoUrl(url)) {
-      img.classList.add('hidden'); vid.classList.remove('hidden');
+    if (url === '__YOUTUBE__') {
+      showSpinner(false);
+      const ov = $('youtube-overlay');
+      const lnk = $('youtube-link') as HTMLAnchorElement | null;
+      if (ov && lnk && lbYtUrl) {
+        lnk.href = lbYtUrl;
+        ov.classList.remove('hidden');
+        ov.classList.add('flex');
+        requestAnimationFrame(() => ov.classList.remove('opacity-0'));
+      }
+    } else if (isVideoUrl(url)) {
+      vid.classList.remove('hidden');
       showSpinner(true);
       vid.src = url;
       vid.onloadeddata = () => onReady(vid);
       vid.onerror = () => { showSpinner(false); showErrorState(true); };
       vid.load();
     } else {
-      vid.pause(); vid.src = ''; vid.classList.add('hidden');
+      vid.pause(); vid.src = '';
       img.classList.remove('hidden');
       showSpinner(true);
       const tmpImg = new Image();
@@ -590,6 +610,10 @@ import { supabase } from '../lib/supabase';
       lbTitle  = String(title  || '').slice(0, 200);
       lbYtUrl  = (typeof ytUrl === 'string' && ytUrl.startsWith('http')) ? ytUrl : '';
       lbIdx    = 0;
+
+      if (lbYtUrl) {
+        gallery.push('__YOUTUBE__');
+      }
 
       const modal = $('portfolio-modal');
       if (!modal) return;

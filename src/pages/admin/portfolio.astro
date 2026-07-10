@@ -273,12 +273,29 @@ import Layout from '../../layouts/Layout.astro';
         if (!files || files.length === 0) return;
 
         if (currentGallery.length + files.length > 5) {
-            alert("Máximo 5 imágenes por proyecto");
+            alert("Máximo 5 imágenes/videos por proyecto");
             return;
         }
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
+            
+            // Video duration check max 6 seconds
+            if (file.type.startsWith('video/')) {
+                const duration = await new Promise((resolve) => {
+                    const video = document.createElement('video');
+                    video.preload = 'metadata';
+                    video.onloadedmetadata = () => resolve(video.duration);
+                    video.onerror = () => resolve(0);
+                    video.src = URL.createObjectURL(file);
+                });
+                
+                if (Number(duration) > 6.1) {
+                    alert("No se pueden subir videos de más de 6 segundos. El archivo '" + file.name + "' tiene " + Math.round(Number(duration)) + "s y no será subido.");
+                    continue;
+                }
+            }
+
             const fileExt = file.name.split('.').pop();
             const fileName = `prop-${Date.now()}-${i}.${fileExt}`;
             const filePath = `portfolio/${fileName}`;
