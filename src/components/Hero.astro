@@ -91,12 +91,13 @@ if (heroData.image && !isRemoteHero) {
             {heroData.subtitle}
         </p>
         
-        <div class="flex flex-col gap-4 w-full max-w-[280px] mx-auto">
-          <a href="#portfolio" class="bg-[#567C8D] text-white font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+        <div class="flex flex-col items-center justify-center gap-6 w-full mx-auto mt-2">
+          <a href="#portfolio" class="bg-[#567C8D] text-white font-bold px-10 py-4 rounded-full text-[10px] uppercase tracking-widest shadow-xl shadow-[#567C8D]/20 active:scale-95 transition-all inline-block">
             {heroData.ctaText}
           </a>
-          <a href="#contacto" class="bg-white/80 border border-[#C8D9E6] text-[#1C2B3A] font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition-all">
-            Contactar Ahora
+          <a href="#contacto" class="group flex items-center gap-3 text-[#567C8D] font-bold text-[10px] uppercase tracking-widest border-b-2 border-[#567C8D] px-2 pb-1 active:scale-95 transition-all">
+            Contactar
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
       </div>

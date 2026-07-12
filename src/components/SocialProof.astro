@@ -67,9 +67,9 @@ const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTest
     </div>
 
     <!-- ── TESTIMONIALS ── -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+    <div class="flex overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 gap-6 md:grid md:grid-cols-3 md:overflow-visible md:p-0 md:m-0 md:gap-12 hide-scrollbar">
       {displayTestimonials.map((t, i) => (
-        <div class={`reveal reveal-delay-${i+1} bg-[#F5EFEB]/50 rounded-[40px] p-10 md:p-12 border border-[#C8D9E6]/20 hover:bg-[#1C2B3A] hover:text-white transition-all duration-500 group shadow-sm hover:shadow-2xl`}>
+        <div class={`w-[85%] shrink-0 snap-center md:w-auto reveal reveal-delay-${i+1} bg-[#F5EFEB]/50 rounded-[40px] p-10 md:p-12 border border-[#C8D9E6]/20 hover:bg-[#1C2B3A] hover:text-white transition-all duration-500 group shadow-sm hover:shadow-2xl`}>
           <div class="mb-8 text-[#567C8D] group-hover:text-white/20">
             <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017V14H15.017C13.3592 14 12.017 12.6578 12.017 11V7C12.017 5.34315 13.3592 4 15.017 4H19.017C20.6738 4 22.017 5.34315 22.017 7V16.4862C22.017 17.5843 21.616 18.6468 20.8959 19.4624L18.4287 22.2568C18.1718 22.5476 17.7262 22.5833 17.4262 22.3364L14.417 19.9572C14.1554 19.7503 14.008 19.435 14.017 19.1027L14.017 21ZM5.01692 21L5.01692 18C5.01692 16.8954 5.91235 16 7.01692 16H10.0169V14H6.01692C4.35906 14 3.01692 12.6578 3.01692 11V7C3.01692 5.34315 4.35906 4 6.01692 4H10.0169C11.6738 4 13.0169 5.34315 13.0169 7V16.4862C13.0169 17.5843 12.6159 18.6468 11.8958 19.4624L9.42861 22.2568C9.17173 22.5476 8.72607 22.5833 8.42611 22.3364L5.41689 19.9572C5.15528 19.7503 5.00782 19.435 5.01692 19.1027L5.01692 21Z"/></svg>
           </div>
@@ -100,4 +100,6 @@ const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTest
   }
   .logo-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.1); border-color: #567C8D; }
   @media (min-width: 768px) { .logo-card { width: 180px; height: 80px; } }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

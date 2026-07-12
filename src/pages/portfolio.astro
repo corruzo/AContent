@@ -763,10 +763,10 @@ import { supabase } from '../lib/supabase';
       btn.onclick = () => {
         document.querySelectorAll('.filter-btn').forEach(b => {
           b.classList.remove('bg-[#1C2B3A]', 'text-white', 'border-[#1C2B3A]');
-          b.classList.add('bg-transparent', 'text-[#567C8D]', 'border-[#567C8D]/40');
+          b.classList.add('bg-white', 'text-[#567C8D]', 'border-[#567C8D]/25');
         });
         btn.classList.add('bg-[#1C2B3A]', 'text-white', 'border-[#1C2B3A]');
-        btn.classList.remove('bg-transparent', 'text-[#567C8D]', 'border-[#567C8D]/40');
+        btn.classList.remove('bg-white', 'text-[#567C8D]', 'border-[#567C8D]/25');
         applyFilter(btn.getAttribute('data-filter') || 'Todos');
       };
     });

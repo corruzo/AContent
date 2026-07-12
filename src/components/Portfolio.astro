@@ -86,7 +86,7 @@ const hasMore = totalProjects > FEATURED_COUNT;
 
     <!-- ── GRID: 3 columnas iguales, altura fija ── -->
     <!-- Diseño simple y robusto: nunca habrá huecos ni que ajustar nada. -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-7">
+    <div class="flex overflow-x-auto snap-x snap-mandatory pb-10 -mx-6 px-6 gap-5 md:grid md:grid-cols-3 md:overflow-visible md:p-0 md:m-0 lg:gap-7 hide-scrollbar">
       {featuredProjects.map((p, i) => (
         <div
           data-id={p.id}
@@ -97,7 +97,7 @@ const hasMore = totalProjects > FEATURED_COUNT;
           aria-label={`Ver galería de ${p.title}`}
           tabindex="0"
           class={`reveal portfolio-item group relative rounded-[36px] lg:rounded-[48px] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-700
-                  h-full min-h-[350px] lg:min-h-[450px]
+                  w-[88%] shrink-0 snap-center md:w-auto h-full min-h-[400px] lg:min-h-[450px]
                   ${(i === 0 || i === 3) ? 'md:col-span-2' : 'md:col-span-1'}`}
           style={`background-color: ${p.color}`}
         >
@@ -166,19 +166,23 @@ const hasMore = totalProjects > FEATURED_COUNT;
 
     <!-- ── VER TODOS (botón móvil / CTA principal) ── -->
     {hasMore && (
-      <div class="mt-14 md:mt-16 flex justify-center">
+      <div class="mt-14 md:mt-20 flex justify-center px-6">
         <a
           href="/portfolio"
-          data-astro-reload
-          class="inline-flex items-center gap-4 bg-[#1C2B3A] text-white font-black text-[11px] uppercase tracking-[0.25em] px-10 py-5 rounded-full hover:bg-[#567C8D] transition-all duration-300 hover:scale-105 shadow-xl shadow-[#1C2B3A]/20 group"
+          data-astro-prefetch
+          class="group relative flex items-center justify-between w-full max-w-[340px] md:max-w-none md:w-auto md:inline-flex gap-6 md:gap-10 bg-transparent border border-[#1C2B3A]/20 text-[#1C2B3A] font-black text-[10px] md:text-[11px] uppercase tracking-[0.25em] pl-8 pr-2 py-2 rounded-full transition-all duration-500 hover:bg-[#1C2B3A] hover:border-[#1C2B3A] hover:text-white shadow-sm hover:shadow-2xl hover:shadow-[#1C2B3A]/20 active:scale-95"
         >
-          Ver todos los proyectos
-          <span class="bg-white/20 text-white text-[10px] font-black px-3 py-1 rounded-full">
-            {totalProjects}
+          <span class="flex items-center gap-3">
+            Explorar Galería
+            <span class="bg-[#1C2B3A]/10 group-hover:bg-white/20 transition-colors duration-500 text-[10px] px-2.5 py-0.5 rounded-full">
+              {totalProjects}
+            </span>
           </span>
-          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 rounded-full bg-[#1C2B3A] group-hover:bg-white text-white group-hover:text-[#1C2B3A] flex items-center justify-center transition-all duration-500">
+            <svg class="w-5 h-5 transition-transform duration-500 group-hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17L17 7M17 7H9M17 7V15" />
+            </svg>
+          </div>
         </a>
       </div>
     )}
@@ -295,6 +299,8 @@ const hasMore = totalProjects > FEATURED_COUNT;
 </div>
 
 <style>
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   #home-thumbnail-strip::-webkit-scrollbar { display: none; }
   .lb-thumb { flex-shrink:0; width:50px; height:36px; border-radius:6px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:all 0.2s ease; opacity:0.4; }
   .lb-thumb:hover { opacity:0.75; transform:scale(1.06); }

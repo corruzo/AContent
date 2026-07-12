@@ -51,27 +51,32 @@ const navLinks = [
     </div>
 
     <!-- ── MOBILE MENU BUTTON ── -->
-    <button id="menu-btn" class="md:hidden flex flex-col gap-1.5 w-12 h-12 items-center justify-center bg-[#1C2B3A] border border-white/10 rounded-2xl shadow-xl outline-none active:scale-95 transition-all z-[120]" aria-label="Menu">
-      <span class="burger-bar bar-1 block w-6 h-0.5 bg-white rounded-full transition-all duration-300"></span>
-      <span class="burger-bar bar-2 block w-6 h-0.5 bg-white rounded-full transition-all duration-300"></span>
+    <button id="menu-btn" class="md:hidden flex flex-col gap-2 w-12 h-12 items-center justify-center bg-transparent border border-[#1C2B3A]/20 rounded-full outline-none active:scale-95 transition-all z-[120]" aria-label="Menu">
+      <span class="burger-bar bar-1 block w-5 h-[2px] bg-[#1C2B3A] rounded-full transition-all duration-300"></span>
+      <span class="burger-bar bar-2 block w-5 h-[2px] bg-[#1C2B3A] rounded-full transition-all duration-300"></span>
     </button>
   </div>
 
   <!-- ── MOBILE NAVIGATION (FULLSCREEN OVERLAY) ── -->
-  <div id="mobile-menu" class="fixed inset-0 bg-[#1C2B3A] z-[105] opacity-0 pointer-events-none transition-all duration-500 flex flex-col pt-32 px-10">
-    <div class="flex flex-col gap-3 w-full max-w-sm mx-auto transform translate-y-8 transition-transform duration-700" id="mobile-menu-content">
-       {navLinks.map((link) => (
-         <a href={link.href} class="bg-white/5 border border-white/10 text-white text-left px-8 py-6 rounded-[32px] text-xs font-black uppercase tracking-[0.3em] hover:bg-white hover:text-[#1C2B3A] transition-all duration-300 mobile-link">
-           {link.label}
+  <div id="mobile-menu" class="fixed inset-0 bg-[#1C2B3A] z-[105] opacity-0 pointer-events-none transition-all duration-700 flex flex-col pt-32 px-8">
+    <div class="flex flex-col w-full max-w-sm mx-auto h-full pb-12" id="mobile-menu-content">
+       <div class="flex flex-col gap-8 flex-1 justify-center">
+         {navLinks.map((link, index) => (
+           <div class="overflow-hidden">
+             <a href={link.href} class="flex items-center gap-5 text-white text-4xl sm:text-5xl font-display font-bold leading-none hover:text-[#C8D9E6] transition-colors mobile-link">
+               <span class="text-[9px] font-black uppercase tracking-widest text-[#567C8D] mb-1">0{index + 1}</span>
+               {link.label}
+             </a>
+           </div>
+         ))}
+       </div>
+       
+       <div class="mt-auto flex flex-col items-center gap-8 mobile-link">
+         <a href={`https://wa.me/${waNumber}`} target="_blank" class="w-full bg-white text-[#1C2B3A] text-center py-5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#C8D9E6] transition-colors active:scale-95 shadow-xl">
+           Contactar por WhatsApp
          </a>
-       ))}
-       <a href={`https://wa.me/${waNumber}`} target="_blank" class="bg-[#25D366] text-white text-center py-6 rounded-[32px] text-xs font-black uppercase tracking-[0.3em] mt-2 shadow-2xl transition-transform active:scale-95 mobile-link">
-         WhatsApp Directo
-       </a>
-    </div>
-    
-    <div class="mt-auto pb-12 text-center">
-       <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#567C8D]/50">Anais Cruz • Visual Storytelling</p>
+         <p class="text-[9px] font-black uppercase tracking-[0.4em] text-[#C8D9E6]/30">Anais Cruz • Visual Storytelling</p>
+       </div>
     </div>
   </div>
 </nav>
@@ -106,14 +111,13 @@ const navLinks = [
   }
 
   /* Burger Animation Active */
-  #menu-btn.active .bar-1 { transform: translateY(4px) rotate(45deg); background-color: white !important; }
-  #menu-btn.active .bar-2 { transform: translateY(-4px) rotate(-45deg); background-color: white !important; }
+  #menu-btn.active .bar-1 { transform: translateY(5px) rotate(45deg); }
+  #menu-btn.active .bar-2 { transform: translateY(-5px) rotate(-45deg); }
   #menu-btn.active { 
-    background-color: white; 
-    border-color: transparent; 
+    border-color: rgba(255, 255, 255, 0.2); 
   }
-  #menu-btn.active .burger-bar {
-    background-color: #1C2B3A !important;
+  #navbar.menu-open #menu-btn .burger-bar {
+    background-color: white !important;
   }
 
   /* Mobile Menu Activation */
@@ -121,15 +125,13 @@ const navLinks = [
     opacity: 1 !important; 
     pointer-events: auto !important; 
   }
-  #mobile-menu.active #mobile-menu-content { 
-    transform: translateY(0); 
-  }
   #mobile-menu.active .mobile-link { 
     opacity: 1; 
+    transform: translateY(0);
   }
   
   /* Staggered Delay for Mobile Links */
-  .mobile-link { opacity: 0; transition: all 0.5s ease; }
+  .mobile-link { opacity: 0; transform: translateY(20px); transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
   #mobile-menu.active .mobile-link:nth-child(1) { transition-delay: 0.1s; }
   #mobile-menu.active .mobile-link:nth-child(2) { transition-delay: 0.2s; }
   #mobile-menu.active .mobile-link:nth-child(3) { transition-delay: 0.3s; }
